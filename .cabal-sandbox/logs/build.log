@@ -1,0 +1,21 @@
+
+package: demo-blockchain-0.1.0.0
+os: linux
+arch: x86_64
+compiler: ghc-8.4.4
+client: cabal-install-2.2.0.0
+dependencies: base-4.11.1.0 base-4.11.1.0
+install-outcome: InstallOk
+docs-outcome: NotTried
+tests-outcome: NotTried
+
+package: cryptohash-sha256-0.11.101.0
+os: linux
+arch: x86_64
+compiler: ghc-8.4.4
+client: cabal-install-2.2.0.0
+flags: -exe
+dependencies: base-4.11.1.0 bytestring-0.10.8.2
+install-outcome: InstallOk
+docs-outcome: NotTried
+tests-outcome: NotTried

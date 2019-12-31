@@ -1,0 +1,12 @@
+cabal: Entering directory '.'
+Configuring demo-blockchain-0.1.0.0...
+Preprocessing executable 'demo-blockchain' for demo-blockchain-0.1.0.0..
+Building executable 'demo-blockchain' for demo-blockchain-0.1.0.0..
+[1 of 1] Compiling Main             ( Main.hs, dist/dist-sandbox-375f4f59/build/demo-blockchain/demo-blockchain-tmp/Main.o )
+Linking dist/dist-sandbox-375f4f59/build/demo-blockchain/demo-blockchain ...
+Preprocessing library for demo-blockchain-0.1.0.0..
+Building library for demo-blockchain-0.1.0.0..
+[1 of 1] Compiling Main             ( Main.hs, dist/dist-sandbox-375f4f59/build/Main.o )
+Installing executable demo-blockchain in /home/saurabh/workspace/demo_blockchain/blockchain/.cabal-sandbox/bin
+Installing library in /home/saurabh/workspace/demo_blockchain/blockchain/.cabal-sandbox/lib/x86_64-linux-ghc-8.4.4/demo-blockchain-0.1.0.0-CNmSbJKQFkUL6p1FYEG05X
+cabal: Leaving directory '.'
