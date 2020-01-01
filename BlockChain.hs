@@ -1,10 +1,7 @@
 module BlockChain where
 import Data.Time.Clock (getCurrentTime)
-import Data.ByteString.Lazy
-import Data.ByteString.Lazy.UTF8 as BLU
 import qualified Crypto.Hash.SHA256 as SHA256
-import Data.Text as DT (pack)
-import Data.Text.Encoding (encodeUtf8)
+import Data.ByteString.Char8 as BS
 
 
 type Index = Int
@@ -22,23 +19,16 @@ data Block = Block { index :: Index
                     ,nonce :: Nonce
                    }
 
+demoBlock = Block 1 "prevHash" getCurrentTimeStamp "blockData" "000" 1
 
--- createDemoBlock = Block 0 "0" 
---
---calculateHashForBlock :: Index -> PrevHash -> TimeStamp -> BlockData -> Nonce -> IO String
-calculateHashForBlock index prevHash timeStamp blockData nonce = 
+calculateHashForBlock :: Block -> IO ByteString
+calculateHashForBlock block = do
+	time <- timestamp block
+	let hashData = ((show (BlockChain.index block)) ++ (prevHash block) ++ time ++ (blockData block) ++ (show (nonce block)))
+	return (createHash hashData)
 
-	do
-	time <- timeStamp
-	let hashData = ((show index) ++ prevHash ++ time ++ blockData ++ (show nonce))
-	let dataHash = BLU.fromString hashData
-	return (createHash dataHash)
-	-- let hash = 
-	
-	
-
-createHash sdata = SHA256.hash $ encodeUtf8 (DT.pack sdata)
-
+createHash :: String -> ByteString
+createHash sdata = SHA256.hash ( BS.pack sdata)
 
 getCurrentTimeStamp :: IO String
 getCurrentTimeStamp = show <$> getCurrentTime
