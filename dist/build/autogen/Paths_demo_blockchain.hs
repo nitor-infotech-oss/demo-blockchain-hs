@@ -30,7 +30,7 @@ version = Version [0,1,0,0] []
 bindir, libdir, dynlibdir, datadir, libexecdir, sysconfdir :: FilePath
 
 bindir     = "/home/saurabh/.cabal/bin"
-libdir     = "/home/saurabh/.cabal/lib/x86_64-linux-ghc-8.4.4/demo-blockchain-0.1.0.0-CNmSbJKQFkUL6p1FYEG05X"
+libdir     = "/home/saurabh/.cabal/lib/x86_64-linux-ghc-8.4.4/demo-blockchain-0.1.0.0-J3LrXwYymPJ61AG8JXqP1S"
 dynlibdir  = "/home/saurabh/.cabal/lib/x86_64-linux-ghc-8.4.4"
 datadir    = "/home/saurabh/.cabal/share/x86_64-linux-ghc-8.4.4/demo-blockchain-0.1.0.0"
 libexecdir = "/home/saurabh/.cabal/libexec/x86_64-linux-ghc-8.4.4/demo-blockchain-0.1.0.0"

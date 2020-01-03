@@ -1,34 +1,66 @@
 module BlockChain where
-import Data.Time.Clock (getCurrentTime)
+import Data.Time.Clock
 import qualified Crypto.Hash.SHA256 as SHA256
-import Data.ByteString.Char8 as BS
+import qualified Data.ByteString.Char8 as BS
 
 
 type Index = Int
-type PrevHash = String
-type TimeStamp = IO String
+type PrevHash = BS.ByteString
+type Timestamp = UTCTime
 type BlockData = String
-type Hash = String
+type Hash = BS.ByteString
 type Nonce = Int
+
 
 data Block = Block { index :: Index
                     ,prevHash :: PrevHash
-                    ,timestamp :: TimeStamp
+                    ,timestamp :: Timestamp
                     ,blockData :: BlockData
                     ,hash :: Hash
                     ,nonce :: Nonce
-                   }
+                   } deriving (Show, Eq)
 
-demoBlock = Block 1 "prevHash" getCurrentTimeStamp "blockData" "000" 1
+data BlockValidationStatus = IndexError String | PrevHashError String | HashError String | Valid deriving (Show, Eq)
 
-calculateHashForBlock :: Block -> IO ByteString
-calculateHashForBlock block = do
-	time <- timestamp block
-	let hashData = ((show (BlockChain.index block)) ++ (prevHash block) ++ time ++ (blockData block) ++ (show (nonce block)))
-	return (createHash hashData)
 
-createHash :: String -> ByteString
+createHash :: String -> BS.ByteString
 createHash sdata = SHA256.hash ( BS.pack sdata)
 
-getCurrentTimeStamp :: IO String
-getCurrentTimeStamp = show <$> getCurrentTime
+
+calculateHashForBlock :: Block -> BS.ByteString
+calculateHashForBlock block = calculateHashForBlock' (index block) (prevHash block) (timestamp block) (blockData block) (nonce block)
+
+
+calculateHashForBlock' :: Index -> PrevHash -> Timestamp -> BlockData -> Nonce -> BS.ByteString
+calculateHashForBlock' index prevHash timestamp blockData nonce =
+    createHash hashData
+      where
+        hashData =  (show index) ++ (show prevHash) ++ (show timestamp) ++ blockData ++ (show nonce )
+
+
+generateNextBlock :: Block -> BlockData -> IO Block
+generateNextBlock currentBlock bdata = do
+    timestamp <- getCurrentTime
+    let nextIndex = (index currentBlock) + 1
+    let prevHash = hash currentBlock
+    let nonce = 0
+    let nextHash = calculateHashForBlock' nextIndex prevHash timestamp bdata nonce
+    return (Block nextIndex prevHash timestamp bdata nextHash nonce)
+
+
+isValidNewBlock :: Block -> Block -> BlockValidationStatus
+isValidNewBlock currentBlock newBlock = validateNextBlock currentBlock newBlock (calculateHashForBlock newBlock)
+      where
+        validateNextBlock cBlock nBlock newBlockHash
+          | (hash cBlock) /= (prevHash nBlock) = PrevHashError ("cBlock : " ++ (show (hash cBlock)) ++ ", \nnBlock : " ++ (show (prevHash nBlock)))
+          | (index cBlock) + 1 /= (index nBlock) = IndexError ""
+          | newBlockHash /= (hash nBlock) = HashError ""
+          | otherwise = Valid
+
+genesisBlock :: IO Block
+genesisBlock = do
+    now <- getCurrentTime
+    let prevHash = BS.pack "0"
+    let blockData = "Welcome to demo blockchain"
+    let hash = calculateHashForBlock' 1 prevHash now blockData 0
+    return (Block 1 prevHash now blockData hash 0)

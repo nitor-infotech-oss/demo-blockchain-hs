@@ -77,6 +77,17 @@
   (major1) == 1 && (major2) == 2 && (minor) <= 3)
 #endif /* MIN_VERSION_text */
 
+/* package hexstring-0.11.1 */
+#ifndef VERSION_hexstring
+#define VERSION_hexstring "0.11.1"
+#endif /* VERSION_hexstring */
+#ifndef MIN_VERSION_hexstring
+#define MIN_VERSION_hexstring(major1,major2,minor) (\
+  (major1) <  0 || \
+  (major1) == 0 && (major2) <  11 || \
+  (major1) == 0 && (major2) == 11 && (minor) <= 1)
+#endif /* MIN_VERSION_hexstring */
+
 /* tool alex-3.2.4 */
 #ifndef TOOL_VERSION_alex
 #define TOOL_VERSION_alex "3.2.4"
@@ -210,7 +221,7 @@
 #endif /* MIN_TOOL_VERSION_strip */
 
 #ifndef CURRENT_COMPONENT_ID
-#define CURRENT_COMPONENT_ID "demo-blockchain-0.1.0.0-CNmSbJKQFkUL6p1FYEG05X-demo-blockchain"
+#define CURRENT_COMPONENT_ID "demo-blockchain-0.1.0.0-J3LrXwYymPJ61AG8JXqP1S-demo-blockchain"
 #endif /* CURRENT_COMPONENT_ID */
 #ifndef CURRENT_PACKAGE_VERSION
 #define CURRENT_PACKAGE_VERSION "0.1.0.0"

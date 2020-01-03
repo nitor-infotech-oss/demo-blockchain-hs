@@ -22,6 +22,72 @@
   (major1) == 4 && (major2) == 11 && (minor) <= 1)
 #endif /* MIN_VERSION_base */
 
+/* package cryptohash-sha256-0.11.101.0 */
+#ifndef VERSION_cryptohash_sha256
+#define VERSION_cryptohash_sha256 "0.11.101.0"
+#endif /* VERSION_cryptohash_sha256 */
+#ifndef MIN_VERSION_cryptohash_sha256
+#define MIN_VERSION_cryptohash_sha256(major1,major2,minor) (\
+  (major1) <  0 || \
+  (major1) == 0 && (major2) <  11 || \
+  (major1) == 0 && (major2) == 11 && (minor) <= 101)
+#endif /* MIN_VERSION_cryptohash_sha256 */
+
+/* package time-1.8.0.2 */
+#ifndef VERSION_time
+#define VERSION_time "1.8.0.2"
+#endif /* VERSION_time */
+#ifndef MIN_VERSION_time
+#define MIN_VERSION_time(major1,major2,minor) (\
+  (major1) <  1 || \
+  (major1) == 1 && (major2) <  8 || \
+  (major1) == 1 && (major2) == 8 && (minor) <= 0)
+#endif /* MIN_VERSION_time */
+
+/* package bytestring-0.10.8.2 */
+#ifndef VERSION_bytestring
+#define VERSION_bytestring "0.10.8.2"
+#endif /* VERSION_bytestring */
+#ifndef MIN_VERSION_bytestring
+#define MIN_VERSION_bytestring(major1,major2,minor) (\
+  (major1) <  0 || \
+  (major1) == 0 && (major2) <  10 || \
+  (major1) == 0 && (major2) == 10 && (minor) <= 8)
+#endif /* MIN_VERSION_bytestring */
+
+/* package utf8-string-1.0.1.1 */
+#ifndef VERSION_utf8_string
+#define VERSION_utf8_string "1.0.1.1"
+#endif /* VERSION_utf8_string */
+#ifndef MIN_VERSION_utf8_string
+#define MIN_VERSION_utf8_string(major1,major2,minor) (\
+  (major1) <  1 || \
+  (major1) == 1 && (major2) <  0 || \
+  (major1) == 1 && (major2) == 0 && (minor) <= 1)
+#endif /* MIN_VERSION_utf8_string */
+
+/* package text-1.2.3.1 */
+#ifndef VERSION_text
+#define VERSION_text "1.2.3.1"
+#endif /* VERSION_text */
+#ifndef MIN_VERSION_text
+#define MIN_VERSION_text(major1,major2,minor) (\
+  (major1) <  1 || \
+  (major1) == 1 && (major2) <  2 || \
+  (major1) == 1 && (major2) == 2 && (minor) <= 3)
+#endif /* MIN_VERSION_text */
+
+/* package hexstring-0.11.1 */
+#ifndef VERSION_hexstring
+#define VERSION_hexstring "0.11.1"
+#endif /* VERSION_hexstring */
+#ifndef MIN_VERSION_hexstring
+#define MIN_VERSION_hexstring(major1,major2,minor) (\
+  (major1) <  0 || \
+  (major1) == 0 && (major2) <  11 || \
+  (major1) == 0 && (major2) == 11 && (minor) <= 1)
+#endif /* MIN_VERSION_hexstring */
+
 /* tool alex-3.2.4 */
 #ifndef TOOL_VERSION_alex
 #define TOOL_VERSION_alex "3.2.4"
@@ -155,10 +221,10 @@
 #endif /* MIN_TOOL_VERSION_strip */
 
 #ifndef CURRENT_PACKAGE_KEY
-#define CURRENT_PACKAGE_KEY "demo-blockchain-0.1.0.0-CNmSbJKQFkUL6p1FYEG05X"
+#define CURRENT_PACKAGE_KEY "demo-blockchain-0.1.0.0-J3LrXwYymPJ61AG8JXqP1S"
 #endif /* CURRENT_PACKAGE_KEY */
 #ifndef CURRENT_COMPONENT_ID
-#define CURRENT_COMPONENT_ID "demo-blockchain-0.1.0.0-CNmSbJKQFkUL6p1FYEG05X"
+#define CURRENT_COMPONENT_ID "demo-blockchain-0.1.0.0-J3LrXwYymPJ61AG8JXqP1S"
 #endif /* CURRENT_COMPONENT_ID */
 #ifndef CURRENT_PACKAGE_VERSION
 #define CURRENT_PACKAGE_VERSION "0.1.0.0"

@@ -1,0 +1,61 @@
+cabal: Entering directory '/tmp/cabal-tmp-15627/aeson-1.4.6.0'
+Configuring aeson-1.4.6.0...
+Preprocessing library for aeson-1.4.6.0..
+Building library for aeson-1.4.6.0..
+[ 1 of 25] Compiling Data.Aeson.Compat ( Data/Aeson/Compat.hs, dist/dist-sandbox-375f4f59/build/Data/Aeson/Compat.o )
+[ 2 of 25] Compiling Data.Aeson.Internal.Functions ( Data/Aeson/Internal/Functions.hs, dist/dist-sandbox-375f4f59/build/Data/Aeson/Internal/Functions.o )
+[ 3 of 25] Compiling Data.Aeson.Parser.UnescapePure ( pure/Data/Aeson/Parser/UnescapePure.hs, dist/dist-sandbox-375f4f59/build/Data/Aeson/Parser/UnescapePure.o )
+[ 4 of 25] Compiling Data.Aeson.Parser.Unescape ( Data/Aeson/Parser/Unescape.hs, dist/dist-sandbox-375f4f59/build/Data/Aeson/Parser/Unescape.o )
+[ 5 of 25] Compiling Data.Aeson.Types.Generic ( Data/Aeson/Types/Generic.hs, dist/dist-sandbox-375f4f59/build/Data/Aeson/Types/Generic.o )
+[ 6 of 25] Compiling Data.Aeson.Types.Internal ( Data/Aeson/Types/Internal.hs, dist/dist-sandbox-375f4f59/build/Data/Aeson/Types/Internal.o )
+[ 7 of 25] Compiling Data.Aeson.Parser.Internal ( Data/Aeson/Parser/Internal.hs, dist/dist-sandbox-375f4f59/build/Data/Aeson/Parser/Internal.o )
+[ 8 of 25] Compiling Data.Aeson.Parser ( Data/Aeson/Parser.hs, dist/dist-sandbox-375f4f59/build/Data/Aeson/Parser.o )
+[ 9 of 25] Compiling Data.Attoparsec.Time.Internal ( attoparsec-iso8601/Data/Attoparsec/Time/Internal.hs, dist/dist-sandbox-375f4f59/build/Data/Attoparsec/Time/Internal.o )
+
+attoparsec-iso8601/Data/Attoparsec/Time/Internal.hs:24:1: warning: [-Wunused-imports]
+    The import of ‘Unsafe.Coerce’ is redundant
+      except perhaps to import instances from ‘Unsafe.Coerce’
+    To import instances alone, use: import Unsafe.Coerce()
+   |
+24 | import Unsafe.Coerce (unsafeCoerce)
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[10 of 25] Compiling Data.Attoparsec.Time ( attoparsec-iso8601/Data/Attoparsec/Time.hs, dist/dist-sandbox-375f4f59/build/Data/Attoparsec/Time.o )
+[11 of 25] Compiling Data.Aeson.Parser.Time ( Data/Aeson/Parser/Time.hs, dist/dist-sandbox-375f4f59/build/Data/Aeson/Parser/Time.o )
+[12 of 25] Compiling Data.Aeson.Types.FromJSON ( Data/Aeson/Types/FromJSON.hs, dist/dist-sandbox-375f4f59/build/Data/Aeson/Types/FromJSON.o )
+
+Data/Aeson/Types/FromJSON.hs:505:3: warning: [-Winline-rule-shadowing]
+    Rule "FromJSONKeyCoerce: fmap id" may never fire
+      because ‘id’ might inline first
+    Probable fix: add an INLINE[n] or NOINLINE[n] pragma for ‘id’
+    |
+505 |   "FromJSONKeyCoerce: fmap id"     forall (x :: FromJSONKeyFunction a).
+    |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^...
+
+Data/Aeson/Types/FromJSON.hs:800:35: warning: [-Wunused-matches]
+    Defined but not used: ‘v’
+    |
+800 | withBoundedScientific_ whenFail f v@(Number scientific) =
+    |                                   ^
+
+Data/Aeson/Types/FromJSON.hs:805:5: warning: [-Wname-shadowing]
+    This binding for ‘exponent’ shadows the existing binding
+      imported from ‘Prelude.Compat’ at Data/Aeson/Types/FromJSON.hs:83:1-21
+      (and originally defined in ‘GHC.Float’)
+    |
+805 |     exponent = base10Exponent scientific
+    |     ^^^^^^^^
+[13 of 25] Compiling Data.Aeson.Internal ( Data/Aeson/Internal.hs, dist/dist-sandbox-375f4f59/build/Data/Aeson/Internal.o )
+[14 of 25] Compiling Data.Aeson.Internal.Time ( Data/Aeson/Internal/Time.hs, dist/dist-sandbox-375f4f59/build/Data/Aeson/Internal/Time.o )
+[15 of 25] Compiling Data.Aeson.Encoding.Builder ( Data/Aeson/Encoding/Builder.hs, dist/dist-sandbox-375f4f59/build/Data/Aeson/Encoding/Builder.o )
+[16 of 25] Compiling Data.Aeson.Encoding.Internal ( Data/Aeson/Encoding/Internal.hs, dist/dist-sandbox-375f4f59/build/Data/Aeson/Encoding/Internal.o )
+[17 of 25] Compiling Data.Aeson.Encoding ( Data/Aeson/Encoding.hs, dist/dist-sandbox-375f4f59/build/Data/Aeson/Encoding.o )
+[18 of 25] Compiling Data.Aeson.Types.ToJSON ( Data/Aeson/Types/ToJSON.hs, dist/dist-sandbox-375f4f59/build/Data/Aeson/Types/ToJSON.o )
+[19 of 25] Compiling Data.Aeson.Types.Class ( Data/Aeson/Types/Class.hs, dist/dist-sandbox-375f4f59/build/Data/Aeson/Types/Class.o )
+[20 of 25] Compiling Data.Aeson.Types ( Data/Aeson/Types.hs, dist/dist-sandbox-375f4f59/build/Data/Aeson/Types.o )
+[21 of 25] Compiling Data.Aeson.Text  ( Data/Aeson/Text.hs, dist/dist-sandbox-375f4f59/build/Data/Aeson/Text.o )
+[22 of 25] Compiling Data.Aeson       ( Data/Aeson.hs, dist/dist-sandbox-375f4f59/build/Data/Aeson.o )
+[23 of 25] Compiling Data.Aeson.TH    ( Data/Aeson/TH.hs, dist/dist-sandbox-375f4f59/build/Data/Aeson/TH.o )
+[24 of 25] Compiling Data.Aeson.QQ.Simple ( Data/Aeson/QQ/Simple.hs, dist/dist-sandbox-375f4f59/build/Data/Aeson/QQ/Simple.o )
+[25 of 25] Compiling Data.Aeson.Encode ( Data/Aeson/Encode.hs, dist/dist-sandbox-375f4f59/build/Data/Aeson/Encode.o )
+Installing library in /home/saurabh/workspace/demo_blockchain/blockchain/.cabal-sandbox/lib/x86_64-linux-ghc-8.4.4/aeson-1.4.6.0-L1qZU01p7qyCb9bSYUeSvz
+cabal: Leaving directory '/tmp/cabal-tmp-15627/aeson-1.4.6.0'

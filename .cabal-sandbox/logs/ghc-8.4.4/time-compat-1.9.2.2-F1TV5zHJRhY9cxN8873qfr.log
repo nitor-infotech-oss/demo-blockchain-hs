@@ -1,0 +1,23 @@
+cabal: Entering directory '/tmp/cabal-tmp-15627/time-compat-1.9.2.2'
+Configuring time-compat-1.9.2.2...
+Preprocessing library for time-compat-1.9.2.2..
+Building library for time-compat-1.9.2.2..
+[ 1 of 17] Compiling Data.Format      ( src/Data/Format.hs, dist/dist-sandbox-375f4f59/build/Data/Format.o )
+[ 2 of 17] Compiling Data.Time.Orphans ( src/Data/Time/Orphans.hs, dist/dist-sandbox-375f4f59/build/Data/Time/Orphans.o )
+[ 3 of 17] Compiling Data.Time.Format.Compat ( src/Data/Time/Format/Compat.hs, dist/dist-sandbox-375f4f59/build/Data/Time/Format/Compat.o )
+[ 4 of 17] Compiling Data.Time.Clock.System.Compat ( src/Data/Time/Clock/System/Compat.hs, dist/dist-sandbox-375f4f59/build/Data/Time/Clock/System/Compat.o )
+[ 5 of 17] Compiling Data.Time.Clock.POSIX.Compat ( src/Data/Time/Clock/POSIX/Compat.hs, dist/dist-sandbox-375f4f59/build/Data/Time/Clock/POSIX/Compat.o )
+[ 6 of 17] Compiling Data.Time.Clock.Compat ( src/Data/Time/Clock/Compat.hs, dist/dist-sandbox-375f4f59/build/Data/Time/Clock/Compat.o )
+[ 7 of 17] Compiling Data.Time.Calendar.WeekDate.Compat ( src/Data/Time/Calendar/WeekDate/Compat.hs, dist/dist-sandbox-375f4f59/build/Data/Time/Calendar/WeekDate/Compat.o )
+[ 8 of 17] Compiling Data.Time.Calendar.Private ( src/Data/Time/Calendar/Private.hs, dist/dist-sandbox-375f4f59/build/Data/Time/Calendar/Private.o )
+[ 9 of 17] Compiling Data.Time.Calendar.OrdinalDate.Compat ( src/Data/Time/Calendar/OrdinalDate/Compat.hs, dist/dist-sandbox-375f4f59/build/Data/Time/Calendar/OrdinalDate/Compat.o )
+[10 of 17] Compiling Data.Time.Calendar.MonthDay.Compat ( src/Data/Time/Calendar/MonthDay/Compat.hs, dist/dist-sandbox-375f4f59/build/Data/Time/Calendar/MonthDay/Compat.o )
+[11 of 17] Compiling Data.Time.Calendar.Easter.Compat ( src/Data/Time/Calendar/Easter/Compat.hs, dist/dist-sandbox-375f4f59/build/Data/Time/Calendar/Easter/Compat.o )
+[12 of 17] Compiling Data.Time.Calendar.Compat ( src/Data/Time/Calendar/Compat.hs, dist/dist-sandbox-375f4f59/build/Data/Time/Calendar/Compat.o )
+[13 of 17] Compiling Data.Time.LocalTime.Compat ( src/Data/Time/LocalTime/Compat.hs, dist/dist-sandbox-375f4f59/build/Data/Time/LocalTime/Compat.o )
+[14 of 17] Compiling Data.Time.Format.ISO8601.Compat ( src/Data/Time/Format/ISO8601/Compat.hs, dist/dist-sandbox-375f4f59/build/Data/Time/Format/ISO8601/Compat.o )
+[15 of 17] Compiling Data.Time.Compat ( src/Data/Time/Compat.hs, dist/dist-sandbox-375f4f59/build/Data/Time/Compat.o )
+[16 of 17] Compiling Data.Time.Clock.TAI.Compat ( src/Data/Time/Clock/TAI/Compat.hs, dist/dist-sandbox-375f4f59/build/Data/Time/Clock/TAI/Compat.o )
+[17 of 17] Compiling Data.Time.Calendar.Julian.Compat ( src/Data/Time/Calendar/Julian/Compat.hs, dist/dist-sandbox-375f4f59/build/Data/Time/Calendar/Julian/Compat.o )
+Installing library in /home/saurabh/workspace/demo_blockchain/blockchain/.cabal-sandbox/lib/x86_64-linux-ghc-8.4.4/time-compat-1.9.2.2-F1TV5zHJRhY9cxN8873qfr
+cabal: Leaving directory '/tmp/cabal-tmp-15627/time-compat-1.9.2.2'
