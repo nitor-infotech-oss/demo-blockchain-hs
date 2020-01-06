@@ -20,6 +20,7 @@ data Block = Block { index :: Index
                     ,nonce :: Nonce
                    } deriving (Show, Eq)
 
+data BlockChain = BlockChain [Block] deriving (Show, Eq)
 data BlockValidationStatus = IndexError String | PrevHashError String | HashError String | Valid deriving (Show, Eq)
 
 
@@ -56,6 +57,9 @@ isValidNewBlock currentBlock newBlock = validateNextBlock currentBlock newBlock 
           | (index cBlock) + 1 /= (index nBlock) = IndexError ""
           | newBlockHash /= (hash nBlock) = HashError ""
           | otherwise = Valid
+
+isValidHashDifficulty :: Hash -> Int -> Bool
+isValidHashDifficulty hash df = (length $ takeWhile (=='0') (BS.unpack hash)) > df
 
 genesisBlock :: IO Block
 genesisBlock = do
