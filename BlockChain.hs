@@ -78,13 +78,15 @@ genesisBlock = do
     return (Block 1 prevHash now blockData hash uNonce difficulty)
 
 
-mine :: BlockChain -> BlockData -> IO BlockChain
+mine :: BlockChain -> BlockData -> IO (Maybe BlockChain)
 mine  blockChain blockData = do
     let currentBlock = (last blockChain)
     newBlock <- generateNextBlock currentBlock blockData
-    return (blockChain ++ [newBlock])
+    return (validateNewBlock currentBlock newBlock)
+      where
+        validateNewBlock currentBlock newBlock | (isValidNewBlock currentBlock newBlock) == Valid = Just (blockChain ++ [newBlock])
+                                 | otherwise = Nothing
 
-    {-
 run = do
     b1 <- genesisBlock
     b2 <- generateNextBlock b1 "data_1"
@@ -92,4 +94,3 @@ run = do
     let chain = [b1,b2,b3]
     newChain <- mine chain "data_3"
     return newChain
-    -}
