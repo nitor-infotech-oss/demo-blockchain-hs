@@ -27,6 +27,6 @@ executable demo-blockchain
   main-is:             Main.hs
   other-modules:       BlockChain
   -- other-extensions:
-  build-depends:       base >=4.11 && <4.12, cryptohash-sha256, time, bytestring, utf8-string, text, hexstring
+  build-depends:       base >=4.11 && <4.12, cryptohash-sha256, time, bytestring, utf8-string, text, hexstring, cryptonite, memory
   -- hs-source-dirs:
   default-language:    Haskell2010

@@ -1,8 +1,0 @@
-cabal: Entering directory '/tmp/cabal-tmp-15627/base-orphans-0.8.1'
-Configuring base-orphans-0.8.1...
-Preprocessing library for base-orphans-0.8.1..
-Building library for base-orphans-0.8.1..
-[1 of 2] Compiling Data.Orphans.Prelude ( src/Data/Orphans/Prelude.hs, dist/dist-sandbox-375f4f59/build/Data/Orphans/Prelude.o )
-[2 of 2] Compiling Data.Orphans     ( src/Data/Orphans.hs, dist/dist-sandbox-375f4f59/build/Data/Orphans.o )
-Installing library in /home/saurabh/workspace/demo_blockchain/blockchain/.cabal-sandbox/lib/x86_64-linux-ghc-8.4.4/base-orphans-0.8.1-LpWli1H2PWtE29ZjvhIw9v
-cabal: Leaving directory '/tmp/cabal-tmp-15627/base-orphans-0.8.1'
