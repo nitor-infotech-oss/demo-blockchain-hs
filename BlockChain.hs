@@ -64,6 +64,7 @@ isValidNextBlock currentBlock newBlock = let (newBlockHash, nonce) = (calculateH
 isValidHashDifficulty :: Hash -> Int -> Bool
 isValidHashDifficulty hash df = (length $ takeWhile (=='0') (BS.unpack hash)) >= df
 
+
 isValidBlockChain :: BlockChain -> Bool
 isValidBlockChain (b:bs) = isValidBlockChain' b bs
     where
@@ -73,6 +74,7 @@ isValidBlockChain (b:bs) = isValidBlockChain' b bs
 
 isChainLonger :: BlockChain -> BlockChain -> Bool
 isChainLonger currentBlockChain newBlockChain = length currentBlockChain > length newBlockChain
+
 
 genesisBlock :: IO Block
 genesisBlock = do
@@ -97,3 +99,11 @@ initBlockChain :: IO BlockChain
 initBlockChain = do
     genBlock <- genesisBlock
     return [genBlock]
+
+
+run = do
+    b1 <- genesisBlock
+    b2 <- generateNextBlock b1 "data_1"
+    let chain = [b1,b2]
+    newChain <- mine chain "data_3"
+    return newChain
