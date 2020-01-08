@@ -25,9 +25,6 @@ data Block = Block { index :: Index
 
 
 
-data BlockValidationStatus = IndexError String | PrevHashError String | HashError String | Valid deriving (Show, Eq)
-
-
 calculateHashForBlock :: Block -> (BS.ByteString, Nonce)
 calculateHashForBlock block = calculateHashForBlock' (index block) (prevHash block) (timestamp block) (blockData block) (nonce block) (difficulty block)
 
@@ -53,20 +50,29 @@ generateNextBlock currentBlock bdata = do
     return (Block nextIndex prevHash timestamp bdata nextHash uNonce hashDifficulty)
 
 
-isValidNewBlock :: Block -> Block -> BlockValidationStatus
-isValidNewBlock currentBlock newBlock = let (newBlockHash, nonce) = (calculateHashForBlock newBlock) in
+isValidNextBlock :: Block -> Block -> Bool
+isValidNextBlock currentBlock newBlock = let (newBlockHash, nonce) = (calculateHashForBlock newBlock) in
                                             validateNextBlock currentBlock newBlock newBlockHash
       where
         validateNextBlock cBlock nBlock newBlockHash
-          | (hash cBlock) /= (prevHash nBlock) = PrevHashError ("cBlock : " ++ (show (hash cBlock)) ++ ", \nnBlock : " ++ (show (prevHash nBlock)))
-          | (index cBlock) + 1 /= (index nBlock) = IndexError ""
-          | newBlockHash /= (hash nBlock) = HashError ""
-          | otherwise = Valid
+          | (hash cBlock) /= (prevHash nBlock) = False
+          | (index cBlock) + 1 /= (index nBlock) = False
+          | newBlockHash /= (hash nBlock) = False
+          | otherwise = True
 
 
 isValidHashDifficulty :: Hash -> Int -> Bool
 isValidHashDifficulty hash df = (length $ takeWhile (=='0') (BS.unpack hash)) >= df
 
+isValidBlockChain :: BlockChain -> Bool
+isValidBlockChain (b:bs) = isValidBlockChain' b bs
+    where
+      isValidBlockChain' _ [] = True
+      isValidBlockChain' b0 (b1:bs) | (isValidNextBlock b0 b1) = isValidBlockChain' b1 bs
+                                    | otherwise = False
+
+isChainLonger :: BlockChain -> BlockChain -> Bool
+isChainLonger currentBlockChain newBlockChain = length currentBlockChain > length newBlockChain
 
 genesisBlock :: IO Block
 genesisBlock = do
@@ -84,13 +90,10 @@ mine  blockChain blockData = do
     newBlock <- generateNextBlock currentBlock blockData
     return (validateNewBlock currentBlock newBlock)
       where
-        validateNewBlock currentBlock newBlock | (isValidNewBlock currentBlock newBlock) == Valid = Just (blockChain ++ [newBlock])
+        validateNewBlock currentBlock newBlock | (isValidNextBlock currentBlock newBlock) = Just (blockChain ++ [newBlock])
                                  | otherwise = Nothing
-
-run = do
-    b1 <- genesisBlock
-    b2 <- generateNextBlock b1 "data_1"
-    b3 <- generateNextBlock b2 "data_2"
-    let chain = [b1,b2,b3]
-    newChain <- mine chain "data_3"
-    return newChain
+                                     
+initBlockChain :: IO BlockChain
+initBlockChain = do
+    genBlock <- genesisBlock
+    return [genBlock]
