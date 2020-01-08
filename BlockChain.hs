@@ -1,15 +1,19 @@
 module BlockChain where
 import Data.Time.Clock
-import qualified Crypto.Hash.SHA256 as SHA256
-import qualified Data.ByteString.Char8 as BS
+
+import Crypto.Hash
+import Data.ByteString (ByteString)
+import qualified Data.ByteString.UTF8 as UTF8
+import Data.ByteArray.Encoding
+
 
 
 type Index = Int
 type Difficulty = Int
-type PrevHash = BS.ByteString
+type PrevHash = String
 type Timestamp = UTCTime
 type BlockData = String
-type Hash = BS.ByteString
+type Hash = String
 type Nonce = Int
 type BlockChain = [Block]
 
@@ -18,32 +22,40 @@ data Block = Block { index :: Index
                     ,prevHash :: PrevHash
                     ,timestamp :: Timestamp
                     ,blockData :: BlockData
-                    ,hash :: Hash
+                    ,blockHash :: Hash
                     ,nonce :: Nonce
                     ,difficulty :: Difficulty
                    } deriving (Show, Eq)
 
 
+sha256 :: String -> String
+sha256 input = result
+  where
+    bytes = UTF8.fromString input      :: ByteString
+    digest = hashWith SHA256 bytes     :: Digest SHA256
+    hex = convertToBase Base16 digest  :: ByteString
+    result = UTF8.toString hex         :: String
 
-calculateHashForBlock :: Block -> (BS.ByteString, Nonce)
+
+calculateHashForBlock :: Block -> (String, Nonce)
 calculateHashForBlock block = calculateHashForBlock' (index block) (prevHash block) (timestamp block) (blockData block) (nonce block) (difficulty block)
 
 
-calculateHashForBlock' :: Index -> PrevHash -> Timestamp -> BlockData -> Nonce -> Difficulty -> (BS.ByteString, Nonce)
+calculateHashForBlock' :: Index -> PrevHash -> Timestamp -> BlockData -> Nonce -> Difficulty -> (String, Nonce)
 calculateHashForBlock' index prevHash timestamp blockData nonce difficulty = 
     let hash = createHash (hashData nonce) in
         if (isValidHashDifficulty hash difficulty) then (hash, nonce)
                                       else calculateHashForBlock' index prevHash timestamp blockData (nonce + 1) difficulty
     where
       hashData nonce' =  (show nonce') ++ (show index) ++ (show prevHash) ++ (show timestamp) ++ blockData
-      createHash sdata = SHA256.hash ( BS.pack sdata)
+      createHash sdata = sha256 sdata
 
 
 generateNextBlock :: Block -> BlockData -> IO Block
 generateNextBlock currentBlock bdata = do
     timestamp <- getCurrentTime
     let nextIndex = (index currentBlock) + 1
-    let prevHash = hash currentBlock
+    let prevHash = blockHash currentBlock
     let nonce = 0
     let hashDifficulty = difficulty currentBlock
     let (nextHash,uNonce) = calculateHashForBlock' nextIndex prevHash timestamp bdata nonce hashDifficulty 
@@ -55,14 +67,14 @@ isValidNextBlock currentBlock newBlock = let (newBlockHash, nonce) = (calculateH
                                             validateNextBlock currentBlock newBlock newBlockHash
       where
         validateNextBlock cBlock nBlock newBlockHash
-          | (hash cBlock) /= (prevHash nBlock) = False
+          | (blockHash cBlock) /= (prevHash nBlock) = False
           | (index cBlock) + 1 /= (index nBlock) = False
-          | newBlockHash /= (hash nBlock) = False
+          | newBlockHash /= (blockHash nBlock) = False
           | otherwise = True
 
 
 isValidHashDifficulty :: Hash -> Int -> Bool
-isValidHashDifficulty hash df = (length $ takeWhile (=='0') (BS.unpack hash)) >= df
+isValidHashDifficulty hash df = (length $ takeWhile (=='0') hash) >= df
 
 
 isValidBlockChain :: BlockChain -> Bool
@@ -79,7 +91,7 @@ isChainLonger currentBlockChain newBlockChain = length currentBlockChain > lengt
 genesisBlock :: IO Block
 genesisBlock = do
     now <- getCurrentTime
-    let prevHash = BS.pack "0"
+    let prevHash = "0"
     let blockData = "Welcome to demo blockchain"
     let difficulty = 2
     let (hash, uNonce) = calculateHashForBlock' 1 prevHash now blockData 0 difficulty
