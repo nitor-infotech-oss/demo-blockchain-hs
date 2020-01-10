@@ -17,7 +17,7 @@ cabal-version:       >=1.10
 
 library
   exposed-modules:     Main
-  -- other-modules:       BlockChain
+  other-modules:       BlockChain
   -- other-extensions:
   build-depends:       base >=4.11 && <4.12, cryptohash-sha256, time, bytestring,  binary, cryptonite, memory, utf8-string
   -- hs-source-dirs:
