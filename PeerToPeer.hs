@@ -1,29 +1,39 @@
+{-# LANGUAGE OverloadedStrings #-}
+
+
 module PeerToPeer where
 
 import Control.Concurrent (forkFinally)
 import qualified Control.Exception as E
 import Control.Monad (unless, forever, void)
-import qualified Data.ByteString as S
+import qualified Data.ByteString.Lazy as S
 import Network.Socket
-import Network.Socket.ByteString (recv, sendAll)
-import qualified Data.ByteString.Char8 as C
+import Network.Socket.ByteString.Lazy (recv, sendAll)
+import qualified Data.ByteString.Lazy.Char8 as C
+import BlockChain
 
+
+type Port = String
 
 peerHandler sock = do
     msg <- recv sock 1024
+    putStrLn (show (getDeserializedBlockChain msg))
     unless (S.null msg) $ do
         sendAll sock msg
         peerHandler sock
     
 peer = \s -> do
-    sendAll s (C.pack "Hello, world!")
+    blockchain <- initBlockChain
+    putStrLn (show blockchain)
+    let sBlockchain = getSerializedBlockChain blockchain
+    sendAll s sBlockchain
     msg <- recv s 1024
     putStr "Received: "
     C.putStrLn msg
 
 
-server :: IO ()
-server = runTCPServer Nothing "3000" peerHandler
+openPort :: Port -> IO ()
+openPort port = runTCPServer Nothing port peerHandler
 
 runTCPServer :: Maybe HostName -> ServiceName -> (Socket -> IO a) -> IO a
 runTCPServer mhost port server = withSocketsDo $ do
@@ -48,8 +58,10 @@ runTCPServer mhost port server = withSocketsDo $ do
         void $ forkFinally (server conn) (const $ gracefulClose conn 5000)
 
 
-client :: IO ()
-client = runTCPClient "127.0.0.1" "3000" $ peer
+connectToPeer :: Maybe HostName -> Port -> IO ()
+connectToPeer host port = case host of Just hostAddr -> runTCPClient hostAddr port $ peer
+                                       Nothing -> runTCPClient "127.0.0.1" port $ peer
+
 
 runTCPClient :: HostName -> ServiceName -> (Socket -> IO a) -> IO a
 runTCPClient host port client = withSocketsDo $ do

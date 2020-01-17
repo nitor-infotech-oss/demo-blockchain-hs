@@ -123,7 +123,7 @@ mine blockChain blockData = do
 
 
 getSerializedBlockChain chain = Data.Binary.encode chain
-getDeserializedBlockChain chain = Data.Binary.decode chain :: Maybe BlockChain
+getDeserializedBlockChain chain = Data.Binary.decode chain :: BlockChain
 
 
 
