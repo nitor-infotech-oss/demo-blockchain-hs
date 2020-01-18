@@ -25,7 +25,7 @@ library
 
 executable demo-blockchain
   main-is:             Main.hs
-  other-modules:       
+  other-modules:       BlockChain, PeerToPeer
   -- other-extensions:
   build-depends:       base >=4.11 && <4.12, cryptohash-sha256, time, bytestring,  binary, cryptonite, memory, utf8-string, network >= 3.1.1.1
   -- hs-source-dirs:
