@@ -3,7 +3,7 @@
 
 module PeerToPeer where
 
-import Control.Concurrent (forkFinally)
+import Control.Concurrent (forkFinally, forkIO)
 import qualified Control.Exception as E
 import Control.Monad (unless, forever, void)
 import qualified Data.ByteString.Lazy as S
@@ -33,7 +33,7 @@ peer = \s -> do
 
 
 openPort :: Port -> IO ()
-openPort port = runTCPServer Nothing port peerHandler
+openPort port = void $ forkIO $ runTCPServer Nothing port peerHandler
 
 runTCPServer :: Maybe HostName -> ServiceName -> (Socket -> IO a) -> IO a
 runTCPServer mhost port server = withSocketsDo $ do

@@ -2,13 +2,13 @@
 
 module BlockChain where
 
-import           Data.Time.Clock
 import           Crypto.Hash
-import           Data.ByteString                ( ByteString )
-import qualified Data.ByteString.UTF8          as UTF8
-import           Data.ByteArray.Encoding
 import           Data.Binary
-import           GHC.Generics                   ( Generic )
+import           Data.ByteArray.Encoding
+import           Data.ByteString         (ByteString)
+import qualified Data.ByteString.UTF8    as UTF8
+import           Data.Time.Clock
+import           GHC.Generics            (Generic)
 
 
 type Index = Int
