@@ -32,9 +32,11 @@ data Block = Block
     }
     deriving (Show, Eq, Generic)
 
-
 instance Binary Block
 
+
+data Messages = RequestLatestBlock | ReceiveLatestBlock Block | RequestLatestBlockChain | ReceiveLatestBlockChain BlockChain deriving (Show, Eq, Generic)
+instance Binary Messages
 
 sha256 :: String -> String
 sha256 input = result

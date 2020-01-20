@@ -32,6 +32,8 @@ peer = \s -> do
     C.putStrLn msg
 
 
+
+
 openPort :: Port -> IO ()
 openPort port = void $ forkIO $ runTCPServer Nothing port peerHandler
 
