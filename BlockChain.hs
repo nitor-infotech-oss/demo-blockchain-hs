@@ -38,6 +38,10 @@ instance Binary Block
 data Messages = RequestLatestBlock | ReceiveLatestBlock Block | RequestLatestBlockChain | ReceiveLatestBlockChain BlockChain deriving (Show, Eq, Generic)
 instance Binary Messages
 
+serializeMessage msg = Data.Binary.encode msg
+deSerializeMessage msg = Data.Binary.decode msg :: Messages
+
+
 sha256 :: String -> String
 sha256 input = result
   where
@@ -106,12 +110,12 @@ isChainLonger currentBlockChain newBlockChain = length currentBlockChain > lengt
 
 genesisBlock :: IO Block
 genesisBlock = do
-    now <- getCurrentTime
+    let now = "2020-01-20 18:19:57.288924435 UTC" 
     let prevHash       = "0"
     let blockData      = "Welcome to demo blockchain"
     let difficulty     = 2
     let (hash, uNonce) = calculateHashForBlock' 1 prevHash (show now) blockData 0 difficulty
-    return (Block 1 prevHash (show now) blockData hash uNonce difficulty)
+    return (Block 1 prevHash now blockData hash uNonce difficulty)
 
 
 mine :: BlockChain -> BlockData -> IO (Maybe BlockChain)

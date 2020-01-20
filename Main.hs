@@ -1,10 +1,15 @@
 module Main where
 
+
+import Control.Monad.STM
+import Control.Concurrent.STM.TVar
+
 import           BlockChain
 import           PeerToPeer
 
 main :: IO ()
 main = do
+    blockChain <- atomically (newTVar genesisBlock)
     putStrLn greeting
     runApp
       where
@@ -40,7 +45,7 @@ open = do
 connect = do
     putStrLn "Enter peer's IP address to connect (default '127.0.0.1')"
     addr <- getLine
-    putStrLn "Enter peer's port to connect (default '127.0.0.1')"
+    putStrLn "Enter peer's port to connect :"
     port <- getLine
     case addr of
         "" -> connectToPeer Nothing port

@@ -21,7 +21,13 @@ peerHandler sock = do
     unless (S.null msg) $ do
         sendAll sock msg
         peerHandler sock
-    
+
+
+peerHandler' sock = do
+    msg <- recv sock 1024
+    putStrLn (show (deSerializeMessage msg))
+ 
+
 peer = \s -> do
     blockchain <- initBlockChain
     putStrLn (show blockchain)
@@ -31,11 +37,33 @@ peer = \s -> do
     putStr "Received: "
     C.putStrLn msg
 
+peer' = \sock -> do
+  mapM_ putStrLn requestList
+  inp <- getLine
+  requestMessage inp sock
+    where
+      -- messageList = ["1. Request Latest Block", "2. Recieve Latest Block", "3. Request Latest BlockChain", "4. Recieve Latest BlockChain"]
+      requestList = ["1. Request Latest Block", "2. Request Latest BlockChain"]
 
+
+requestMessage msg sock = do
+    case msg of
+      "1" -> getLatestBlock sock
+      "2" -> getLatestBlockChain sock
+
+getLatestBlock sock = do
+  sendAll sock (serializeMessage RequestLatestBlock)
+  reply <- recv sock 1024
+  putStrLn (show reply)
+
+getLatestBlockChain sock = do
+  sendAll sock (serializeMessage RequestLatestBlockChain)
+  reply <- recv sock 1024
+  putStrLn (show reply)
 
 
 openPort :: Port -> IO ()
-openPort port = void $ forkIO $ runTCPServer Nothing port peerHandler
+openPort port = void $ forkIO $ runTCPServer Nothing port peerHandler'
 
 runTCPServer :: Maybe HostName -> ServiceName -> (Socket -> IO a) -> IO a
 runTCPServer mhost port server = withSocketsDo $ do
@@ -61,8 +89,8 @@ runTCPServer mhost port server = withSocketsDo $ do
 
 
 connectToPeer :: Maybe HostName -> Port -> IO ()
-connectToPeer host port = case host of Just hostAddr -> runTCPClient hostAddr port $ peer
-                                       Nothing -> runTCPClient "127.0.0.1" port $ peer
+connectToPeer host port = case host of Just hostAddr -> runTCPClient hostAddr port $ peer'
+                                       Nothing -> runTCPClient "127.0.0.1" port $ peer'
 
 
 runTCPClient :: HostName -> ServiceName -> (Socket -> IO a) -> IO a
