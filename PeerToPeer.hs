@@ -3,67 +3,80 @@
 
 module PeerToPeer where
 
-import Control.Concurrent (forkFinally, forkIO)
-import qualified Control.Exception as E
-import Control.Monad (unless, forever, void)
-import qualified Data.ByteString.Lazy as S
-import Network.Socket
-import Network.Socket.ByteString.Lazy (recv, sendAll)
-import qualified Data.ByteString.Lazy.Char8 as C
-import BlockChain
+import           BlockChain
+import           Control.Concurrent             (forkFinally, forkIO)
+import           Control.Concurrent.STM.TVar
+import qualified Control.Exception              as E
+import           Control.Monad                  (forever, unless, void)
+import           Control.Monad.STM
+import qualified Data.ByteString.Lazy           as S
+import qualified Data.ByteString.Lazy.Char8     as C
+import           Network.Socket
+import           Network.Socket.ByteString.Lazy (recv, sendAll)
 
 
 type Port = String
 
-peerHandler sock = do
+messageHandler tVarBlockChain sock = do
     msg <- recv sock 1024
-    putStrLn (show (getDeserializedBlockChain msg))
-    unless (S.null msg) $ do
-        sendAll sock msg
-        peerHandler sock
+    blockChain <- atomically (readTVar tVarBlockChain)
+    case (deSerializeMessage msg) of
+        RequestLatestBlock -> sendLatestBlock blockChain
+        RequestLatestBlockChain -> sendLatestBlockChain blockChain
+        ReceiveLatestBlock block -> addLatestBlock blockChain block
+        ReceiveLatestBlockChain receivedBlockChain -> replaceWithNewBlockChain blockChain receivedBlockChain
+    messageHandler tVarBlockChain sock
 
-
-peerHandler' sock = do
-    msg <- recv sock 1024
-    putStrLn (show (deSerializeMessage msg))
- 
-
-peer = \s -> do
-    blockchain <- initBlockChain
-    putStrLn (show blockchain)
-    let sBlockchain = getSerializedBlockChain blockchain
-    sendAll s sBlockchain
-    msg <- recv s 1024
-    putStr "Received: "
-    C.putStrLn msg
-
-peer' = \sock -> do
-  mapM_ putStrLn requestList
-  inp <- getLine
-  requestMessage inp sock
     where
-      -- messageList = ["1. Request Latest Block", "2. Recieve Latest Block", "3. Request Latest BlockChain", "4. Recieve Latest BlockChain"]
-      requestList = ["1. Request Latest Block", "2. Request Latest BlockChain"]
+      sendLatestBlock blockChain = do
+          let latestBlock = last blockChain
+          sendAll sock (serializeMessage (ReceiveLatestBlock latestBlock))
+
+      sendLatestBlockChain blockChain = do
+          sendAll sock (serializeMessage (ReceiveLatestBlockChain blockChain))
+
+      addLatestBlock blockChain block = do
+          newBlockChain <- addBlockToBlockChain blockChain block
+          case newBlockChain of
+              Just newChain -> do
+                  atomically (writeTVar tVarBlockChain newChain)
+              Nothing       -> return ()
+
+      replaceWithNewBlockChain blockChain receivedBlockChain = do
+          let res = replaceBlockChain blockChain receivedBlockChain
+          case res of
+              Just newChain -> do
+                  atomically (writeTVar tVarBlockChain newChain)
+              Nothing       -> return ()
 
 
-requestMessage msg sock = do
-    case msg of
-      "1" -> getLatestBlock sock
-      "2" -> getLatestBlockChain sock
+peerCommunicator tVarBlockChain sock = do
+  mapM_ putStrLn requestList
+  request <- getLine
+  blockChain <- atomically (readTVar tVarBlockChain)
+  case request of
+    "1" -> getLatestBlock blockChain
 
-getLatestBlock sock = do
-  sendAll sock (serializeMessage RequestLatestBlock)
-  reply <- recv sock 1024
-  putStrLn (show reply)
+  where
+    getLatestBlock blockChain = do
+        sendAll sock (serializeMessage RequestLatestBlock)
 
-getLatestBlockChain sock = do
-  sendAll sock (serializeMessage RequestLatestBlockChain)
-  reply <- recv sock 1024
-  putStrLn (show reply)
+        msg <- recv sock 1024
+
+        case (deSerializeMessage msg) of
+            ReceiveLatestBlock block -> do
+                newBlockChain <- addBlockToBlockChain blockChain block
+                case newBlockChain of
+                    Just newChain -> do
+                        atomically (writeTVar tVarBlockChain newChain)
+                    Nothing       -> return ()
 
 
-openPort :: Port -> IO ()
-openPort port = void $ forkIO $ runTCPServer Nothing port peerHandler'
+    requestList = ["1. Request Latest Block", "2. Request Latest BlockChain"]
+
+
+-- openPort :: Port -> IO ()
+openPort port tVarBlockChain = void $ forkIO $ runTCPServer Nothing port (messageHandler tVarBlockChain)
 
 runTCPServer :: Maybe HostName -> ServiceName -> (Socket -> IO a) -> IO a
 runTCPServer mhost port server = withSocketsDo $ do
@@ -88,10 +101,10 @@ runTCPServer mhost port server = withSocketsDo $ do
         void $ forkFinally (server conn) (const $ gracefulClose conn 5000)
 
 
-connectToPeer :: Maybe HostName -> Port -> IO ()
-connectToPeer host port = case host of Just hostAddr -> runTCPClient hostAddr port $ peer'
-                                       Nothing -> runTCPClient "127.0.0.1" port $ peer'
-
+--connectToPeer :: Maybe HostName -> Port -> IO ()
+connectToPeer host port blockChain = case host of
+    Just hostAddr -> runTCPClient hostAddr port $ (peerCommunicator blockChain)
+    Nothing       -> runTCPClient "127.0.0.1" port $ (peerCommunicator blockChain)
 
 runTCPClient :: HostName -> ServiceName -> (Socket -> IO a) -> IO a
 runTCPClient host port client = withSocketsDo $ do

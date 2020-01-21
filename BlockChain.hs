@@ -105,12 +105,18 @@ isValidBlockChain (b : bs) = isValidBlockChain' b bs
                                     | otherwise                = False
 
 isChainLonger :: BlockChain -> BlockChain -> Bool
-isChainLonger currentBlockChain newBlockChain = length currentBlockChain > length newBlockChain
+isChainLonger currentBlockChain newBlockChain = length currentBlockChain < length newBlockChain
+
+
+replaceBlockChain :: BlockChain -> BlockChain -> (Maybe BlockChain)
+replaceBlockChain oldBlockChain newBlockChain
+    | (isChainLonger oldBlockChain newBlockChain) && (isValidBlockChain newBlockChain) = Just newBlockChain
+    | otherwise = Nothing
 
 
 genesisBlock :: IO Block
 genesisBlock = do
-    let now = "2020-01-20 18:19:57.288924435 UTC" 
+    let now = "2020-01-20 18:19:57.288924435 UTC"
     let prevHash       = "0"
     let blockData      = "Welcome to demo blockchain"
     let difficulty     = 2
@@ -122,6 +128,15 @@ mine :: BlockChain -> BlockData -> IO (Maybe BlockChain)
 mine blockChain blockData = do
     let currentBlock = (last blockChain)
     newBlock <- generateNextBlock currentBlock blockData
+    return (validateNewBlock currentBlock newBlock)
+  where
+    validateNewBlock currentBlock newBlock | (isValidNextBlock currentBlock newBlock) = Just (blockChain ++ [newBlock])
+                                           | otherwise = Nothing
+
+
+--addBlockToBlockChain :: BlockChain -> Block -> IO (Maybe BlockChain)
+addBlockToBlockChain blockChain newBlock = do
+    let currentBlock = (last blockChain)
     return (validateNewBlock currentBlock newBlock)
   where
     validateNewBlock currentBlock newBlock | (isValidNextBlock currentBlock newBlock) = Just (blockChain ++ [newBlock])
