@@ -56,13 +56,12 @@ peerCommunicator tVarBlockChain sock = do
   blockChain <- atomically (readTVar tVarBlockChain)
   case request of
     "1" -> getLatestBlock blockChain
+    "2" -> getLatestBlockChain blockChain
 
   where
     getLatestBlock blockChain = do
         sendAll sock (serializeMessage RequestLatestBlock)
-
         msg <- recv sock 1024
-
         case (deSerializeMessage msg) of
             ReceiveLatestBlock block -> do
                 newBlockChain <- addBlockToBlockChain blockChain block
@@ -71,6 +70,16 @@ peerCommunicator tVarBlockChain sock = do
                         atomically (writeTVar tVarBlockChain newChain)
                     Nothing       -> return ()
 
+    getLatestBlockChain blockChain = do
+        sendAll sock (serializeMessage RequestLatestBlockChain)
+        msg <- recv sock 1024
+        case (deSerializeMessage msg) of
+            ReceiveLatestBlockChain receivedBlockChain -> do
+                let res = replaceBlockChain blockChain receivedBlockChain
+                case res of
+                    Just newChain -> do
+                        atomically (writeTVar tVarBlockChain newChain)
+                    Nothing       -> return ()
 
     requestList = ["1. Request Latest Block", "2. Request Latest BlockChain"]
 

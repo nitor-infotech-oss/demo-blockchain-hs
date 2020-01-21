@@ -23,13 +23,15 @@ runApp tVarBlockChain = do
     runApp tVarBlockChain
 
       where
-        commandList = ["\n\nEnter command to process", "1. Open port for incoming connection", "2. Connect to peers", "3. Mine block", "4. Broadcast chain", "5. Quit"]
+        commandList = ["\n\nEnter command to process", "1. Open port for incoming connection", "2. Connect to peers", "3. Mine block", "4. Broadcast chain", "5. Show BlockChain", "6. Quit"]
 
 
 commandProcessor cmd tVarBlockChain = do
     case cmd of
         "1" -> open tVarBlockChain
         "2" -> connect tVarBlockChain
+        "3" -> mineNewBlock tVarBlockChain
+        "5" -> showBlockChain tVarBlockChain
         _   -> putStrLn "Not yet defined"
 
 
@@ -52,4 +54,17 @@ connect tVarBlockChain = do
         "" -> connectToPeer Nothing port tVarBlockChain
         _  -> connectToPeer (Just addr) port tVarBlockChain
 
+mineNewBlock tVarBlockChain = do
+    putStrLn "Enter data to mine (default 'Hello World')"
+    inputData <- getLine
+    blockChain <- atomically (readTVar tVarBlockChain)
+    newBlockChain <- mine blockChain inputData
+    case newBlockChain of
+        Just chain -> do
+            atomically (writeTVar tVarBlockChain chain)
+        Nothing -> return ()
+    
 
+showBlockChain tVarBlockChain = do
+    blockChain <- atomically (readTVar tVarBlockChain)
+    putStrLn (show blockChain)
