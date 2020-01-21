@@ -30,10 +30,9 @@ data Block = Block
     , nonce      :: Nonce
     , difficulty :: Difficulty
     }
-    deriving (Show, Eq, Generic)
+    deriving (Eq, Generic)
 
 instance Binary Block
-
 
 data Messages = RequestLatestBlock | ReceiveLatestBlock Block | RequestLatestBlockChain | ReceiveLatestBlockChain BlockChain deriving (Show, Eq, Generic)
 instance Binary Messages
@@ -153,10 +152,13 @@ initBlockChain = do
     genBlock <- genesisBlock
     return [genBlock]
 
-
-run = do
-    b1 <- genesisBlock
-    b2 <- generateNextBlock b1 "data_1"
-    let chain = [b1, b2]
-    newChain <- mine chain "data_3"
-    return newChain
+instance Show Block where
+  show block = blockIndex ++ bData ++ minedAt ++ pHash ++ bHash ++ diff ++ nonc
+    where
+      blockIndex =  "\n" ++ show (index block) ++ "-Block, "
+      bData = "Data: " ++ (blockData block) ++ ", "
+      minedAt = "Mined At: " ++ (show (timestamp block)) ++ ", "
+      pHash = "PrevHash: " ++ (take 16 (prevHash block)) ++ ", "
+      bHash = "BlockHash: " ++ (take 16 (blockHash block)) ++ ", "
+      diff = "Difficulty: " ++ (show (difficulty block)) ++ ", "
+      nonc = "Nonce: " ++ (show (nonce block))

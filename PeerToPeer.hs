@@ -85,10 +85,10 @@ peerCommunicator tVarBlockChain sock = do
 
 
 -- openPort :: Port -> IO ()
-openPort port tVarBlockChain = void $ forkIO $ runTCPServer Nothing port (messageHandler tVarBlockChain)
+openPort port tVarBlockChain tVarPeerList = void $ forkIO $ runTCPServer Nothing port tVarPeerList (messageHandler tVarBlockChain)
 
-runTCPServer :: Maybe HostName -> ServiceName -> (Socket -> IO a) -> IO a
-runTCPServer mhost port server = withSocketsDo $ do
+--runTCPServer :: Maybe HostName -> ServiceName -> (Socket -> IO a) -> IO a
+runTCPServer mhost port tVarPeerList server = withSocketsDo $ do
     addr <- resolve
     E.bracket (open addr) close loop
   where
@@ -107,6 +107,8 @@ runTCPServer mhost port server = withSocketsDo $ do
         return sock
     loop sock = forever $ do
         (conn, _peer) <- accept sock
+        peerList  <- atomically (readTVar tVarPeerList)
+        atomically (writeTVar tVarPeerList ((conn, _peer) : peerList))
         void $ forkFinally (server conn) (const $ gracefulClose conn 5000)
 
 
