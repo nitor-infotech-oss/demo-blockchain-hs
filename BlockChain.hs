@@ -34,7 +34,12 @@ data Block = Block
 
 instance Binary Block
 
-data Messages = RequestLatestBlock | ReceiveLatestBlock Block | RequestLatestBlockChain | ReceiveLatestBlockChain BlockChain deriving (Show, Eq, Generic)
+data Messages = RequestLatestBlock
+                | ReceiveLatestBlock Block
+                | RequestLatestBlockChain
+                | ReceiveLatestBlockChain BlockChain
+                | RequestPeerList
+                | ReceivePeerList [(String, String)] deriving (Show, Eq, Generic)
 instance Binary Messages
 
 serializeMessage msg = Data.Binary.encode msg

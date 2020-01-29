@@ -46,7 +46,7 @@ catchIO	./dist/dist-sandbox-375f4f59/build/demo-blockchain/autogen/Paths_demo_bl
 catchIO	./dist/dist-sandbox-375f4f59/build/demo-blockchain/autogen/Paths_demo_blockchain.hs	26
 commandProcessor	./Main.hs	30
 connect	./Main.hs	49
-connectToPeer	./PeerToPeer.hs	116
+requestPeers	./PeerToPeer.hs	116
 datadir	./dist-newstyle/build/x86_64-linux/ghc-8.4.4/demo-blockchain-0.1.0.0/x/demo-blockchain/build/demo-blockchain/autogen/Paths_demo_blockchain.hs	30
 datadir	./dist-newstyle/build/x86_64-linux/ghc-8.4.4/demo-blockchain-0.1.0.0/x/demo-blockchain/build/demo-blockchain/autogen/Paths_demo_blockchain.hs	35
 datadir	./dist/build/autogen/Paths_demo_blockchain.hs	30

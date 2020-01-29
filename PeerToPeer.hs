@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 
 module PeerToPeer where
@@ -11,21 +12,84 @@ import           Control.Monad                  (forever, unless, void)
 import           Control.Monad.STM
 import qualified Data.ByteString.Lazy           as S
 import qualified Data.ByteString.Lazy.Char8     as C
-import           Network.Socket
 import           Network.Socket.ByteString.Lazy (recv, sendAll)
+import           Data.Binary                    as B
+import           GHC.Generics            (Generic)
+import Network.Socket hiding (send, sendTo, recv, recvFrom)
 
 
 type Port = String
+type Ip = String
 
-messageHandler tVarBlockChain sock = do
+
+openPort port tVarBlockChain tVarPeers = void $ forkIO $ runTCPServer Nothing port tVarPeers (inputMessageHandler tVarBlockChain tVarPeers)
+
+runTCPServer mhost port tVarPeers server = withSocketsDo $ do
+    addr <- resolve
+    E.bracket (open addr) close loop
+  where
+    resolve = do
+        let hints = defaultHints {
+                addrFlags = [AI_PASSIVE]
+              , addrSocketType = Stream
+              }
+        head <$> getAddrInfo (Just hints) mhost (Just port)
+    open addr = do
+        sock <- socket (addrFamily addr) (addrSocketType addr) (addrProtocol addr)
+        setSocketOption sock ReuseAddr 1
+        withFdSocket sock $ setCloseOnExecIfNeeded
+        bind sock $ addrAddress addr
+        listen sock 1024
+        return sock
+    loop sock = forever $ do
+        (conn, _peer) <- accept sock
+        void $ forkFinally (server conn) (const $ gracefulClose conn 5000)
+
+
+requestPeers host port tVarPeers = case host of
+    Just hostAddr -> runTCPClient hostAddr port $ (getPeerList tVarPeers)
+    Nothing       -> runTCPClient "127.0.0.1" port $ (getPeerList tVarPeers)
+    where
+        getPeerList tVarPeers sock = do
+            sendAll sock (serializeMessage RequestPeerList)
+            msg <- recv sock 1024
+            let ReceivePeerList peers = deSerializeMessage msg
+            currentPeers <- atomically (readTVar tVarPeers)
+            atomically (writeTVar tVarPeers (currentPeers ++ peers))
+
+
+
+runTCPClient :: HostName -> ServiceName -> (Socket -> IO a) -> IO a
+runTCPClient host port client = E.bracket (getClientSocket host port) close client
+
+
+getClientSocket host port = withSocketsDo $ do
+    addr <- resolve
+    sock <- open addr
+    return sock
+  where
+    resolve = do
+        let hints = defaultHints { addrSocketType = Stream }
+        head <$> getAddrInfo (Just hints) (Just host) (Just port)
+    open addr = do
+        sock <- socket (addrFamily addr) (addrSocketType addr) (addrProtocol addr)
+        connect sock $ addrAddress addr
+        return sock
+
+inputMessageHandler tVarBlockChain tVarPeers sock = do
+
     msg <- recv sock 1024
+    putStrLn ("Message:  " ++ (show (deSerializeMessage msg)))
+
     blockChain <- atomically (readTVar tVarBlockChain)
     case (deSerializeMessage msg) of
         RequestLatestBlock -> sendLatestBlock blockChain
         RequestLatestBlockChain -> sendLatestBlockChain blockChain
         ReceiveLatestBlock block -> addLatestBlock blockChain block
         ReceiveLatestBlockChain receivedBlockChain -> replaceWithNewBlockChain blockChain receivedBlockChain
-    messageHandler tVarBlockChain sock
+        RequestPeerList -> sendPeerList tVarPeers
+        ReceivePeerList receivedPeers -> addPeers tVarPeers receivedPeers
+    inputMessageHandler tVarBlockChain tVarPeers sock
 
     where
       sendLatestBlock blockChain = do
@@ -49,83 +113,30 @@ messageHandler tVarBlockChain sock = do
                   atomically (writeTVar tVarBlockChain newChain)
               Nothing       -> return ()
 
+      sendPeerList tVarPeers = do
+          peers <- atomically (readTVar tVarPeers)
+          sendAll sock (serializeMessage (ReceivePeerList peers))
 
-peerCommunicator tVarBlockChain sock = do
-  mapM_ putStrLn requestList
-  request <- getLine
-  blockChain <- atomically (readTVar tVarBlockChain)
-  case request of
-    "1" -> getLatestBlock blockChain
-    "2" -> getLatestBlockChain blockChain
+      addPeers tVarPeers receivedPeers = do
+          currentPeers <- atomically (readTVar tVarPeers)
+          atomically (writeTVar tVarPeers (currentPeers ++ receivedPeers ))
 
-  where
-    getLatestBlock blockChain = do
-        sendAll sock (serializeMessage RequestLatestBlock)
-        msg <- recv sock 1024
-        case (deSerializeMessage msg) of
-            ReceiveLatestBlock block -> do
-                newBlockChain <- addBlockToBlockChain blockChain block
-                case newBlockChain of
-                    Just newChain -> do
-                        atomically (writeTVar tVarBlockChain newChain)
-                    Nothing       -> return ()
+        
 
-    getLatestBlockChain blockChain = do
-        sendAll sock (serializeMessage RequestLatestBlockChain)
-        msg <- recv sock 1024
-        case (deSerializeMessage msg) of
-            ReceiveLatestBlockChain receivedBlockChain -> do
-                let res = replaceBlockChain blockChain receivedBlockChain
-                case res of
-                    Just newChain -> do
-                        atomically (writeTVar tVarBlockChain newChain)
-                    Nothing       -> return ()
-
-    requestList = ["1. Request Latest Block", "2. Request Latest BlockChain"]
+broadCastBlockChain tVarBlockChain tVarPeers = do 
+    blockChain <- atomically (readTVar tVarBlockChain)
+    peers <- atomically (readTVar tVarPeers)
+    mapM_ (\(ip,port) -> fn ip port blockChain) peers
+    where
+        fn ip port blockChain = do
+            sock <- getClientSocket ip port
+            sendAll sock (serializeMessage (ReceiveLatestBlockChain blockChain))
 
 
--- openPort :: Port -> IO ()
-openPort port tVarBlockChain tVarPeerList = void $ forkIO $ runTCPServer Nothing port tVarPeerList (messageHandler tVarBlockChain)
-
---runTCPServer :: Maybe HostName -> ServiceName -> (Socket -> IO a) -> IO a
-runTCPServer mhost port tVarPeerList server = withSocketsDo $ do
-    addr <- resolve
-    E.bracket (open addr) close loop
-  where
-    resolve = do
-        let hints = defaultHints {
-                addrFlags = [AI_PASSIVE]
-              , addrSocketType = Stream
-              }
-        head <$> getAddrInfo (Just hints) mhost (Just port)
-    open addr = do
-        sock <- socket (addrFamily addr) (addrSocketType addr) (addrProtocol addr)
-        setSocketOption sock ReuseAddr 1
-        withFdSocket sock $ setCloseOnExecIfNeeded
-        bind sock $ addrAddress addr
-        listen sock 1024
-        return sock
-    loop sock = forever $ do
-        (conn, _peer) <- accept sock
-        peerList  <- atomically (readTVar tVarPeerList)
-        atomically (writeTVar tVarPeerList ((conn, _peer) : peerList))
-        void $ forkFinally (server conn) (const $ gracefulClose conn 5000)
-
-
---connectToPeer :: Maybe HostName -> Port -> IO ()
-connectToPeer host port blockChain = case host of
-    Just hostAddr -> runTCPClient hostAddr port $ (peerCommunicator blockChain)
-    Nothing       -> runTCPClient "127.0.0.1" port $ (peerCommunicator blockChain)
-
-runTCPClient :: HostName -> ServiceName -> (Socket -> IO a) -> IO a
-runTCPClient host port client = withSocketsDo $ do
-    addr <- resolve
-    E.bracket (open addr) close client
-  where
-    resolve = do
-        let hints = defaultHints { addrSocketType = Stream }
-        head <$> getAddrInfo (Just hints) (Just host) (Just port)
-    open addr = do
-        sock <- socket (addrFamily addr) (addrSocketType addr) (addrProtocol addr)
-        connect sock $ addrAddress addr
-        return sock
+-- discoverPeers tVarPeers = do 
+--     currentPeers <- atomically (readTVar tVarPeers)
+--     mapM_ (\(ip,port) -> fn ip port blockChain) peers
+--     where
+--         fn ip port blockChain = do
+--             sock <- getClientSocket ip port
+--             sendAll sock (serializeMessage (ReceiveLatestBlockChain blockChain))            
