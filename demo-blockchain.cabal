@@ -19,7 +19,7 @@ library
   exposed-modules:     Main
   other-modules:       BlockChain, PeerToPeer
   -- other-extensions:
-  build-depends:       base >=4.11 && <4.12, cryptohash-sha256, time, bytestring,  binary, cryptonite, memory, utf8-string, network >= 3.1.1.1, stm
+  build-depends:       base >=4.11 && <4.12, cryptohash-sha256, time, bytestring,  binary, cryptonite, memory, utf8-string, network >= 3.1.1.1, stm, containers
   -- hs-source-dirs:
   default-language:    Haskell2010
 
@@ -27,6 +27,6 @@ executable demo-blockchain
   main-is:             Main.hs
   other-modules:       BlockChain, PeerToPeer
   -- other-extensions:
-  build-depends:       base >=4.11 && <4.12, cryptohash-sha256, time, bytestring,  binary, cryptonite, memory, utf8-string, network >= 3.1.1.1, stm
+  build-depends:       base >=4.11 && <4.12, cryptohash-sha256, time, bytestring,  binary, cryptonite, memory, utf8-string, network >= 3.1.1.1, stm, containers
   -- hs-source-dirs:
   default-language:    Haskell2010

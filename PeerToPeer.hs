@@ -16,6 +16,7 @@ import           Network.Socket.ByteString.Lazy (recv, sendAll)
 import           Data.Binary                    as B
 import           GHC.Generics            (Generic)
 import Network.Socket hiding (send, sendTo, recv, recvFrom)
+import qualified Data.Set as Set
 
 
 type Port = String
@@ -55,7 +56,7 @@ requestPeers host port tVarPeers = case host of
             msg <- recv sock 1024
             let ReceivePeerList peers = deSerializeMessage msg
             currentPeers <- atomically (readTVar tVarPeers)
-            atomically (writeTVar tVarPeers (currentPeers ++ peers))
+            atomically (writeTVar tVarPeers (Set.union currentPeers (Set.fromList peers)))
 
 
 
@@ -115,18 +116,18 @@ inputMessageHandler tVarBlockChain tVarPeers sock = do
 
       sendPeerList tVarPeers = do
           peers <- atomically (readTVar tVarPeers)
-          sendAll sock (serializeMessage (ReceivePeerList peers))
+          sendAll sock (serializeMessage (ReceivePeerList (Set.toList peers)))
 
       addPeers tVarPeers receivedPeers = do
           currentPeers <- atomically (readTVar tVarPeers)
-          atomically (writeTVar tVarPeers (currentPeers ++ receivedPeers ))
+          atomically (writeTVar tVarPeers (Set.union currentPeers (Set.fromList receivedPeers)))
 
         
 
 broadCastBlockChain tVarBlockChain tVarPeers = do 
     blockChain <- atomically (readTVar tVarBlockChain)
     peers <- atomically (readTVar tVarPeers)
-    mapM_ (\(ip,port) -> fn ip port blockChain) peers
+    mapM_ (\(ip,port) -> fn ip port blockChain) (Set.toList peers)
     where
         fn ip port blockChain = do
             sock <- getClientSocket ip port

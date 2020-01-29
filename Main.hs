@@ -7,12 +7,15 @@ import           Control.Monad.STM
 import           BlockChain
 import           PeerToPeer
 
+import qualified Data.Set as Set
+
+
 main :: IO ()
 main = do
     putStrLn greeting
     blockChain <- initBlockChain
     tVarBlockChain <- atomically (newTVar blockChain)
-    tVarPeers <- atomically (newTVar [])
+    tVarPeers <- atomically (newTVar Set.empty)
     runApp tVarBlockChain tVarPeers
       where
         greeting = "\n\nWelcome to blockchain CLI App"
@@ -73,7 +76,8 @@ addPeer tVarPeers = do
     where
         addPeerAddr ip port = do
             currentPeers <- atomically (readTVar tVarPeers)
-            atomically (writeTVar tVarPeers (currentPeers ++ [(ip,port)]))
+            atomically (writeTVar tVarPeers (Set.insert (ip,port) currentPeers ))
+            --atomically (writeTVar tVarPeers (currentPeers ++ [(ip,port)]))
 
 
 requestListOfConnectedPeers tVarPeers = do
