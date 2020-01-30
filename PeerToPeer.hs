@@ -1,5 +1,5 @@
+{-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 
 module PeerToPeer where
@@ -10,13 +10,14 @@ import           Control.Concurrent.STM.TVar
 import qualified Control.Exception              as E
 import           Control.Monad                  (forever, unless, void)
 import           Control.Monad.STM
+import           Data.Binary                    as B
 import qualified Data.ByteString.Lazy           as S
 import qualified Data.ByteString.Lazy.Char8     as C
+import qualified Data.Set                       as Set
+import           GHC.Generics                   (Generic)
+import           Network.Socket                 hiding (recv, recvFrom, send,
+                                                 sendTo)
 import           Network.Socket.ByteString.Lazy (recv, sendAll)
-import           Data.Binary                    as B
-import           GHC.Generics            (Generic)
-import Network.Socket hiding (send, sendTo, recv, recvFrom)
-import qualified Data.Set as Set
 
 
 type Port = String
@@ -48,8 +49,14 @@ runTCPServer mhost port tVarPeers server = withSocketsDo $ do
 
 
 requestPeers host port tVarPeers = case host of
-    Just hostAddr -> runTCPClient hostAddr port $ (getPeerList tVarPeers)
-    Nothing       -> runTCPClient "127.0.0.1" port $ (getPeerList tVarPeers)
+    Just hostAddr -> do
+        runTCPClient hostAddr port $ (getPeerList tVarPeers)
+        atomically (readTVar tVarPeers) >>= (\peers -> atomically (writeTVar tVarPeers (Set.insert (hostAddr,port)  peers)))
+
+    Nothing       -> do
+        runTCPClient "127.0.0.1" port $ (getPeerList tVarPeers)
+        atomically (readTVar tVarPeers) >>= (\peers -> atomically (writeTVar tVarPeers (Set.insert ("127.0.0.1",port)  peers)))
+
     where
         getPeerList tVarPeers sock = do
             sendAll sock (serializeMessage RequestPeerList)
@@ -122,9 +129,9 @@ inputMessageHandler tVarBlockChain tVarPeers sock = do
           currentPeers <- atomically (readTVar tVarPeers)
           atomically (writeTVar tVarPeers (Set.union currentPeers (Set.fromList receivedPeers)))
 
-        
 
-broadCastBlockChain tVarBlockChain tVarPeers = do 
+
+broadCastBlockChain tVarBlockChain tVarPeers = do
     blockChain <- atomically (readTVar tVarBlockChain)
     peers <- atomically (readTVar tVarPeers)
     mapM_ (\(ip,port) -> fn ip port blockChain) (Set.toList peers)
@@ -134,10 +141,27 @@ broadCastBlockChain tVarBlockChain tVarPeers = do
             sendAll sock (serializeMessage (ReceiveLatestBlockChain blockChain))
 
 
--- discoverPeers tVarPeers = do 
---     currentPeers <- atomically (readTVar tVarPeers)
---     mapM_ (\(ip,port) -> fn ip port blockChain) peers
---     where
---         fn ip port blockChain = do
---             sock <- getClientSocket ip port
---             sendAll sock (serializeMessage (ReceiveLatestBlockChain blockChain))            
+discoverPeers tVarPeers tVarSelfAddr = do
+    currentPeers <- atomically (readTVar tVarPeers)
+    selfAddr <- atomically (readTVar tVarSelfAddr)
+    discoveredPeers <- fn (Set.toList currentPeers) (selfAddr : [])
+    let peers = Set.delete selfAddr (Set.fromList discoveredPeers)
+    putStrLn ("discovered peers: " ++ (show peers))
+    atomically (writeTVar tVarPeers peers)
+    return ()
+
+
+    where
+        fn unvistedPeers visitedPeers = case unvistedPeers of
+            [] -> return visitedPeers
+            (p:ps) -> do
+                newPeers <- getConncetedPeers p
+                let newUnvistedPeers = Set.toList (Set.difference (Set.fromList newPeers) (Set.fromList visitedPeers))
+                fn (ps ++ newUnvistedPeers) (p : visitedPeers)
+
+        getConncetedPeers (ip,port) = do
+            sock <- getClientSocket ip port
+            sendAll sock (serializeMessage RequestPeerList)
+            msg <- recv sock 1024
+            let ReceivePeerList peers = deSerializeMessage msg
+            return peers

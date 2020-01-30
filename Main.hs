@@ -7,7 +7,7 @@ import           Control.Monad.STM
 import           BlockChain
 import           PeerToPeer
 
-import qualified Data.Set as Set
+import qualified Data.Set                    as Set
 
 
 main :: IO ()
@@ -16,53 +16,58 @@ main = do
     blockChain <- initBlockChain
     tVarBlockChain <- atomically (newTVar blockChain)
     tVarPeers <- atomically (newTVar Set.empty)
-    runApp tVarBlockChain tVarPeers
+    tVarSelfAddr <- atomically (newTVar ("",""))
+    runApp tVarBlockChain tVarPeers tVarSelfAddr
       where
         greeting = "\n\nWelcome to blockchain CLI App"
 
 
-runApp tVarBlockChain tVarPeers = do
+runApp tVarBlockChain tVarPeers tVarSelfAddr = do
     putStrLn "\n\nEnter command to process"
     mapM_ putStrLn commandList
     command <- getLine
-    commandProcessor command tVarBlockChain tVarPeers
-    runApp tVarBlockChain tVarPeers
+    commandProcessor command tVarBlockChain tVarPeers tVarSelfAddr
+    runApp tVarBlockChain tVarPeers tVarSelfAddr
 
       where
         commandList = [
             "0. Show BlockChain",
             "1. Open port for incoming connection",
-            "2. Add peer",
-            "3. Get peer list from connected peer",
+            "2. Mine block",
+            "3. Broadcast blockChain",
             "4. Show peer list",
-            "5. Mine block",
-            "6. Broadcast blockChain",
-            "7. Broadcast block",
-            "7. Quit"
+            "5. Discover peers from connected peers",
+            "6. Get peer list from a peer",
+            "7. Add peer",
+            "8. Quit"
             ]
 
 
 
-commandProcessor cmd tVarBlockChain tVarPeers= do
+commandProcessor cmd tVarBlockChain tVarPeers tVarSelfAddr= do
     case cmd of
         "0" -> showBlockChain tVarBlockChain
-        "1" -> open tVarBlockChain tVarPeers
-        "2" -> addPeer tVarPeers
-        "3" -> requestListOfConnectedPeers tVarPeers
+        "1" -> open tVarBlockChain tVarPeers tVarSelfAddr
+        "2" -> mineNewBlock tVarBlockChain
+        "3" -> broadCastBlockChain tVarBlockChain tVarPeers
         "4" -> showPeerList tVarPeers
-        "5" -> mineNewBlock tVarBlockChain
-        "6" -> broadCastBlockChain tVarBlockChain tVarPeers
+        "5" -> discoverPeers tVarPeers tVarSelfAddr
+        "6" -> requestListOfConnectedPeers tVarPeers
+        "7" -> addPeer tVarPeers
         _   -> putStrLn "Not yet defined"
 
 
-open tVarBlockChain tVarPeers = do
+open tVarBlockChain tVarPeers tVarSelfAddr = do
     putStrLn "Enter port for incoming connection (default 3000)"
     port <- getLine
     case port of
         "" -> open' "3000"
         _  -> open' port
     where
-      open' port = putStrLn ("Running TCP server on port " ++ port) >> openPort port tVarBlockChain tVarPeers
+      open' port = do
+          putStrLn ("Running TCP server on port " ++ port)
+          openPort port tVarBlockChain tVarPeers
+          atomically (writeTVar tVarSelfAddr ("127.0.0.1", port))
 
 
 addPeer tVarPeers = do
@@ -77,7 +82,6 @@ addPeer tVarPeers = do
         addPeerAddr ip port = do
             currentPeers <- atomically (readTVar tVarPeers)
             atomically (writeTVar tVarPeers (Set.insert (ip,port) currentPeers ))
-            --atomically (writeTVar tVarPeers (currentPeers ++ [(ip,port)]))
 
 
 requestListOfConnectedPeers tVarPeers = do
@@ -99,7 +103,7 @@ mineNewBlock tVarBlockChain = do
         Just chain -> do
             atomically (writeTVar tVarBlockChain chain)
         Nothing -> return ()
-    
+
 
 showPeerList tVarPeers = do
     peerList <- atomically (readTVar tVarPeers)
