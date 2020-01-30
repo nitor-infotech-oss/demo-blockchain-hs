@@ -95,7 +95,7 @@ requestListOfConnectedPeers tVarPeers = do
 
 
 mineNewBlock tVarBlockChain = do
-    putStrLn "Enter data to mine (default 'Hello World')"
+    putStrLn "Enter data to mine"
     inputData <- getLine
     blockChain <- atomically (readTVar tVarBlockChain)
     newBlockChain <- mine blockChain inputData
