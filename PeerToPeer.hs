@@ -18,6 +18,7 @@ import           GHC.Generics                   (Generic)
 import           Network.Socket                 hiding (recv, recvFrom, send,
                                                  sendTo)
 import           Network.Socket.ByteString.Lazy (recv, sendAll)
+import Data.Maybe (fromMaybe)
 
 
 type Port = String
@@ -108,7 +109,7 @@ inputMessageHandler tVarBlockChain tVarPeers sock = do
           sendAll sock (serializeMessage (ReceiveLatestBlockChain blockChain))
 
       addLatestBlock blockChain block = do
-          newBlockChain <- addBlockToBlockChain blockChain block
+          let newBlockChain = addBlockToBlockChain blockChain block
           case newBlockChain of
               Just newChain -> do
                   atomically (writeTVar tVarBlockChain newChain)
@@ -129,6 +130,14 @@ inputMessageHandler tVarBlockChain tVarPeers sock = do
           currentPeers <- atomically (readTVar tVarPeers)
           atomically (writeTVar tVarPeers (Set.union currentPeers (Set.fromList receivedPeers)))
 
+broadCastBlock tVarBlockChain tVarPeers = do
+    blockChain <- atomically (readTVar tVarBlockChain)
+    peers <- atomically (readTVar tVarPeers)
+    mapM_ (\(ip,port) -> fn ip port blockChain) (Set.toList peers)
+    where
+        fn ip port blockChain = do
+            sock <- getClientSocket ip port
+            sendAll sock (serializeMessage (ReceiveLatestBlock (last blockChain)))
 
 
 broadCastBlockChain tVarBlockChain tVarPeers = do
@@ -165,3 +174,37 @@ discoverPeers tVarPeers tVarSelfAddr = do
             msg <- recv sock 1024
             let ReceivePeerList peers = deSerializeMessage msg
             return peers
+
+
+
+
+
+requestAndAddLatestBlock tVarBlockChain peerIp port = do
+    sock <- getClientSocket peerIp port
+    sendAll sock (serializeMessage RequestLatestBlock)
+    msg <- recv sock 1024 
+    let ReceiveLatestBlock latestBlock = deSerializeMessage msg
+    blockChain <- atomically (readTVar tVarBlockChain)
+    let updatedBlockChain = addBlockToBlockChain blockChain latestBlock
+    atomically (writeTVar tVarBlockChain (fromMaybe blockChain updatedBlockChain))
+
+
+requestAndAddLatestBlockFromAllPeer tVarBlockChain tVarPeers = do
+    peers <- atomically (readTVar tVarPeers)
+    mapM_ (\(ip,port) -> requestAndAddLatestBlock tVarBlockChain ip port) peers
+
+
+
+requestAndUpdateLatestBlockChain tVarBlockChain peerIp port = do
+    sock <- getClientSocket peerIp port
+    sendAll sock (serializeMessage RequestLatestBlockChain)
+    msg <- recv sock 1024 
+    let ReceiveLatestBlockChain latestBlockChain = deSerializeMessage msg
+    currentBlockChain <- atomically (readTVar tVarBlockChain)
+    let updatedBlockChain = replaceBlockChain currentBlockChain latestBlockChain
+    atomically (writeTVar tVarBlockChain (fromMaybe currentBlockChain updatedBlockChain))
+
+
+requestAndUpdateLatestBlockChainFromAllPeer tVarBlockChain tVarPeers = do
+    peers <- atomically (readTVar tVarPeers)
+    mapM_ (\(ip,port) -> requestAndUpdateLatestBlockChain tVarBlockChain ip port) peers
