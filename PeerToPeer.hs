@@ -13,17 +13,17 @@ import           Control.Monad.STM
 import           Data.Binary                    as B
 import qualified Data.ByteString.Lazy           as S
 import qualified Data.ByteString.Lazy.Char8     as C
+import           Data.Maybe                     (fromMaybe)
 import qualified Data.Set                       as Set
 import           GHC.Generics                   (Generic)
 import           Network.Socket                 hiding (recv, recvFrom, send,
                                                  sendTo)
 import           Network.Socket.ByteString.Lazy (recv, sendAll)
-import Data.Maybe (fromMaybe)
 
 
 type Port = String
 type Ip = String
-
+localhost = "127.0.0.1"
 
 openPort port tVarBlockChain tVarPeers = void $ forkIO $ runTCPServer Nothing port tVarPeers (inputMessageHandler tVarBlockChain tVarPeers)
 
@@ -55,8 +55,8 @@ requestPeers host port tVarPeers = case host of
         atomically (readTVar tVarPeers) >>= (\peers -> atomically (writeTVar tVarPeers (Set.insert (hostAddr,port)  peers)))
 
     Nothing       -> do
-        runTCPClient "127.0.0.1" port $ (getPeerList tVarPeers)
-        atomically (readTVar tVarPeers) >>= (\peers -> atomically (writeTVar tVarPeers (Set.insert ("127.0.0.1",port)  peers)))
+        runTCPClient localhost port $ (getPeerList tVarPeers)
+        atomically (readTVar tVarPeers) >>= (\peers -> atomically (writeTVar tVarPeers (Set.insert (localhost,port)  peers)))
 
     where
         getPeerList tVarPeers sock = do
@@ -88,7 +88,8 @@ getClientSocket host port = withSocketsDo $ do
 inputMessageHandler tVarBlockChain tVarPeers sock = do
 
     msg <- recv sock 1024
-    putStrLn ("Message:  " ++ (show (deSerializeMessage msg)))
+    peerAddr <- getPeerName sock
+    putStrLn ("Incomming Message:  " ++ (show (deSerializeMessage msg)) ++ " From: " ++ (show peerAddr))
 
     blockChain <- atomically (readTVar tVarBlockChain)
     case (deSerializeMessage msg) of
@@ -182,7 +183,7 @@ discoverPeers tVarPeers tVarSelfAddr = do
 requestAndAddLatestBlock tVarBlockChain peerIp port = do
     sock <- getClientSocket peerIp port
     sendAll sock (serializeMessage RequestLatestBlock)
-    msg <- recv sock 1024 
+    msg <- recv sock 1024
     let ReceiveLatestBlock latestBlock = deSerializeMessage msg
     blockChain <- atomically (readTVar tVarBlockChain)
     let updatedBlockChain = addBlockToBlockChain blockChain latestBlock
@@ -198,7 +199,7 @@ requestAndAddLatestBlockFromAllPeer tVarBlockChain tVarPeers = do
 requestAndUpdateLatestBlockChain tVarBlockChain peerIp port = do
     sock <- getClientSocket peerIp port
     sendAll sock (serializeMessage RequestLatestBlockChain)
-    msg <- recv sock 1024 
+    msg <- recv sock 1024
     let ReceiveLatestBlockChain latestBlockChain = deSerializeMessage msg
     currentBlockChain <- atomically (readTVar tVarBlockChain)
     let updatedBlockChain = replaceBlockChain currentBlockChain latestBlockChain

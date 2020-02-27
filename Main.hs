@@ -5,10 +5,10 @@ import           Control.Concurrent.STM.TVar
 import           Control.Monad.STM
 
 import           BlockChain
-import           PeerToPeer
-import Text.Read ( readMaybe )
-import Data.Maybe (fromMaybe)
+import           Data.Maybe                  (fromMaybe)
 import qualified Data.Set                    as Set
+import           PeerToPeer
+import           Text.Read                   (readMaybe)
 
 
 data Request = LatestBlock | LatestBlockChain deriving (Eq, Show)
@@ -29,8 +29,10 @@ runApp tVarBlockChain tVarPeers tVarSelfAddr = do
     putStrLn "\n\nEnter command to process"
     mapM_ putStrLn commandList
     command <- getLine
-    commandProcessor command tVarBlockChain tVarPeers tVarSelfAddr
-    runApp tVarBlockChain tVarPeers tVarSelfAddr
+    case command of
+        "q" -> return ()
+        _   -> commandProcessor command tVarBlockChain tVarPeers tVarSelfAddr >> runApp tVarBlockChain tVarPeers tVarSelfAddr
+
 
       where
         commandList = [
@@ -53,19 +55,20 @@ runApp tVarBlockChain tVarPeers tVarSelfAddr = do
 
 commandProcessor cmd tVarBlockChain tVarPeers tVarSelfAddr= do
     case cmd of
-        "0" -> showBlockChain tVarBlockChain
-        "1" -> open tVarBlockChain tVarPeers tVarSelfAddr
-        "2" -> mineNewBlock tVarBlockChain
-        "3" -> broadCastBlock tVarBlockChain tVarPeers
-        "4" -> broadCastBlockChain tVarBlockChain tVarPeers
-        "5" -> showPeerList tVarPeers
-        "6" -> discoverPeers tVarPeers tVarSelfAddr
-        "7" -> requestListOfConnectedPeers tVarPeers
-        "8" -> addPeer tVarPeers
-        "9" -> requestLatest LatestBlock tVarBlockChain tVarPeers
+        "0"  -> showBlockChain tVarBlockChain
+        "1"  -> open tVarBlockChain tVarPeers tVarSelfAddr
+        "2"  -> mineNewBlock tVarBlockChain
+        "3"  -> broadCastBlock tVarBlockChain tVarPeers
+        "4"  -> broadCastBlockChain tVarBlockChain tVarPeers
+        "5"  -> showPeerList tVarPeers
+        "6"  -> discoverPeers tVarPeers tVarSelfAddr
+        "7"  -> requestListOfConnectedPeers tVarPeers
+        "8"  -> addPeer tVarPeers
+        "9"  -> requestLatest LatestBlock tVarBlockChain tVarPeers
         "10" -> requestLatest LatestBlockChain tVarBlockChain tVarPeers
         "11" -> showSelfAddr tVarSelfAddr
-        _   -> putStrLn "Not yet defined"
+        "q"  -> putStrLn "Quit"
+        _    -> putStrLn "Not yet defined"
 
 
 showSelfAddr tVarSelfAddr = do
@@ -75,9 +78,9 @@ showSelfAddr tVarSelfAddr = do
 
 
 requestLatest request tVarBlockChain tVarPeers = case request of
-    LatestBlock -> requestLatestBlock'
+    LatestBlock      -> requestLatestBlock'
     LatestBlockChain -> requestLatestBlockChain'
-    
+
     where
         requestLatestBlock' = do
             mapM_ putStrLn blockRequestList
@@ -89,12 +92,12 @@ requestLatest request tVarBlockChain tVarPeers = case request of
                 blockRequestList = [
                     "1. Request latest block from a peer",
                     "2. Request latest block from all connected peer"
-                    ]                
+                    ]
 
                 requestLatestBlockFromPeer = do
                     (ip,port) <- getPeerIpAndPort
                     case ip of
-                        "" -> requestAndAddLatestBlock tVarBlockChain "127.0.0.1" port
+                        "" -> requestAndAddLatestBlock tVarBlockChain localhost port
                         _  -> requestAndAddLatestBlock tVarBlockChain ip port
 
         requestLatestBlockChain' = do
@@ -102,7 +105,7 @@ requestLatest request tVarBlockChain tVarPeers = case request of
             input <- getLine
             case input of
                 "1" -> requestLatestBlockChainFromPeer
-                "2" -> requestAndUpdateLatestBlockChainFromAllPeer tVarBlockChain tVarPeers            
+                "2" -> requestAndUpdateLatestBlockChainFromAllPeer tVarBlockChain tVarPeers
             where
                 blockchainRequestList = [
                     "1. Request latest blockchain from a peer",
@@ -112,7 +115,7 @@ requestLatest request tVarBlockChain tVarPeers = case request of
                 requestLatestBlockChainFromPeer = do
                     (ip,port) <- getPeerIpAndPort
                     case ip of
-                        "" -> requestAndUpdateLatestBlockChain tVarBlockChain "127.0.0.1" port
+                        "" -> requestAndUpdateLatestBlockChain tVarBlockChain localhost port
                         _  -> requestAndUpdateLatestBlockChain tVarBlockChain ip port
 
         getPeerIpAndPort = do
@@ -132,7 +135,7 @@ open tVarBlockChain tVarPeers tVarSelfAddr = do
       open' port = do
           putStrLn ("Running TCP server on port " ++ port)
           openPort port tVarBlockChain tVarPeers
-          atomically (writeTVar tVarSelfAddr ("127.0.0.1", port))
+          atomically (writeTVar tVarSelfAddr (localhost, port))
 
 
 addPeer tVarPeers = do
@@ -141,7 +144,7 @@ addPeer tVarPeers = do
     putStrLn "Enter peer's port"
     port <- getLine
     case peerIp of
-        "" -> addPeerAddr "127.0.0.1" port
+        "" -> addPeerAddr localhost port
         _  -> addPeerAddr peerIp port
     where
         addPeerAddr ip port = do
