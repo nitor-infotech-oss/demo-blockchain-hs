@@ -31,27 +31,27 @@ Conceptual block-chain console app implementation using Haskell
 
 ** Console App
    This is a command line app built using Haskell by implementing basic functionalities of conceptual block-chain.
-   Currently this blockchain app mines data as plain string, but it can be changed to anything from financial transaction
+   Currently this block-chain app mines data as plain string, but it can be changed to anything from financial transaction
    to medical history of a patient. 
    
-   None of exsiting blockchain framework/platform is used in this app. This is built with just Haskell code and Haskell libraries.
+   None of exsiting block-chain framework/platform is used in this app. This is built with just Haskell code and Haskell libraries.
 
 *** Implemented features:
 
-     - Data Minging
+     - Data Mining
      - Connectivity among peer
-     - Broadcast block-chain/latest block to all connceted peer
+     - Broadcast block-chain/latest block to all connected peer
      - Request block-chain/latest block from a peer
      - Request block-chain/latest block from all connected peer
-     - Peer discovery from conncted peer
+     - Peer discovery from concocted peer
 
 
 *** Run
     
     #+BEGIN_SRC bash
-    # Clone git repo
+    git clone https://github.com/saurabhkukade/demo-blockchain-hs.git
     cd demo-blockchain-hs
-    cabal install # install project dependecies
+    cabal install # install project dependence's
     cabal run
     #+END_SRC
 
