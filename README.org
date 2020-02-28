@@ -46,6 +46,9 @@ Conceptual block-chain console app implementation using Haskell
      - Peer discovery from concocted peer
 
 
+*** Prerequisite
+    - ghc - version 8.4.4
+    - cabal-install - version 3.0.0.0
 *** Run
     
     #+BEGIN_SRC bash
@@ -55,7 +58,7 @@ Conceptual block-chain console app implementation using Haskell
     cabal run
     #+END_SRC
 
-    or build a docker container from Dockerfile and run the container.
+    or build a docker container from *Dockerfile* and run the container.
 
     After successful build, app should look like this:
 
