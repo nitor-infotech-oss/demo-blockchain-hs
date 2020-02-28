@@ -58,5 +58,7 @@ Conceptual block-chain console app implementation using Haskell
     or build a docker container from Dockerfile and run the container.
 
 
+[[file:docs/img/command-line-app.png]]
+
 
 
