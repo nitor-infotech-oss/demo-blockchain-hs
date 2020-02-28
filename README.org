@@ -1,0 +1,62 @@
+* Demo Block-Chain Console App
+
+Conceptual block-chain implementation with Haskell Console App
+
+** Why Haskell?
+
+*** Purity
+    Haskell is a purely functional programming language.
+    Purity is the ability to prove the absence of unwanted side-effects.
+    This property allows the Haskell compiler to produce programs that run faster and use all available CPU cores. 
+    And hence Haskell becomes one of the best choice to build block-chain.
+
+*** Strongly typed & Statically typed
+    Block-chain being decentralized software, run-time mistakes are severe. Centralized software has mechanism to undo the mistake after it happens
+    but in decentralized software's, losses are usually non-recoverable. 
+
+    Haskell is strongly typed and that means there are no type conversion allowed like Double to Int, or follow null pointer and this makes
+    code more disciplined and predictable.
+    And of-course static typing means no surprises at run-time.
+    This means the problem is detected long before the code ever ships, and in fact it's impossible to ship the code until the mistake is corrected.
+    Hence Haskell is better tool for building block-chain.
+    
+*** Memory safety & Immutability
+    Haskell is also best known for it's memory safety and data immutability. 
+    This means that you cannot accidentally modify values in your from memory that you did not intend to modify.
+    It prevents one of the most dangerous security vulnerabilities, remote code execution by an attacker.
+    
+    Immutable data is first class in Haskell, so parallel processing becomes more efficient and less error-prone
+    and this also make Haskell more suitable for building block-chain.
+    
+
+** Console App
+   This is a command line app built using Haskell by implementing basic functionalities of conceptual block-chain.
+   Currently this blockchain app mines data as plain string, but it can be changed to anything from financial transaction
+   to medical history of a patient. 
+   
+   None of exsiting blockchain framework/platform is used in this app. This is built with just Haskell code and Haskell libraries.
+
+*** Implemented features:
+
+     - Data Minging
+     - Connectivity among peer
+     - Broadcast block-chain/latest block to all connceted peer
+     - Request block-chain/latest block from a peer
+     - Request block-chain/latest block from all connected peer
+     - Peer discovery from conncted peer
+
+
+*** Run
+    
+    #+BEGIN_SRC bash
+    # Clone git repo
+    cd demo-blockchain-hs
+    cabal install # install project dependecies
+    cabal run
+    #+END_SRC
+
+    or build a docker container from Dockerfile and run the container.
+
+
+
+
