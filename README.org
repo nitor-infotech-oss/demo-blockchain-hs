@@ -49,7 +49,7 @@ Conceptual block-chain console app implementation using Haskell
 *** Run
     
     #+BEGIN_SRC bash
-    # Clone git repo
+    git clone https://github.com/nitor-infotech-oss/demo-blockchain-hs.git
     cd demo-blockchain-hs
     cabal install # install project dependecies
     cabal run
