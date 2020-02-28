@@ -1,6 +1,6 @@
 * Demo Block-Chain Console App
 
-Conceptual block-chain implementation with Haskell Console App
+Conceptual block-chain console app implementation using Haskell
 
 ** Why Haskell?
 
