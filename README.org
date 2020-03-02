@@ -43,7 +43,7 @@ Conceptual block-chain console app implementation using Haskell
      - Broadcast block-chain/latest block to all connected peer
      - Request block-chain/latest block from a peer
      - Request block-chain/latest block from all connected peer
-     - Peer discovery from concocted peer
+     - Peer discovery from connected peer
 
 
 *** Prerequisite
