@@ -1,8 +1,11 @@
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass    #-}
+{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module BlockChain where
 
 import           Crypto.Hash
+import           Data.Aeson              (FromJSON, ToJSON)
 import           Data.Binary
 import           Data.ByteArray.Encoding
 import           Data.ByteString         (ByteString)
@@ -30,7 +33,7 @@ data Block = Block
     , nonce      :: Nonce
     , difficulty :: Difficulty
     }
-    deriving (Eq, Generic)
+    deriving (Eq, Generic, ToJSON, FromJSON)
 
 instance Binary Block
 

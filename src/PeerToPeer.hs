@@ -156,9 +156,8 @@ discoverPeers tVarPeers tVarSelfAddr = do
     selfAddr <- atomically (readTVar tVarSelfAddr)
     discoveredPeers <- fn (Set.toList currentPeers) (selfAddr : [])
     let peers = Set.delete selfAddr (Set.fromList discoveredPeers)
-    putStrLn ("discovered peers: " ++ (show peers))
     atomically (writeTVar tVarPeers peers)
-    return ()
+    return peers
 
 
     where
