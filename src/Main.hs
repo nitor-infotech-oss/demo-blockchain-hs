@@ -16,13 +16,12 @@ data Request = LatestBlock | LatestBlockChain deriving (Eq, Show)
 main :: IO ()
 main = do
     putStrLn greeting
-    blockChain <- initBlockChain
-    tVarBlockChain <- atomically (newTVar blockChain)
+    tVarBlockChain <- atomically (newTVar ([] :: BlockChain))
     tVarPeers <- atomically (newTVar Set.empty)
     tVarSelfAddr <- atomically (newTVar ("",""))
     runApp tVarBlockChain tVarPeers tVarSelfAddr
       where
-        greeting = "\n\nWelcome to blockchain CLI App"
+        greeting = "\n\nWelcome to blockChain CLI App"
 
 
 runApp tVarBlockChain tVarPeers tVarSelfAddr = do
@@ -36,18 +35,19 @@ runApp tVarBlockChain tVarPeers tVarSelfAddr = do
 
       where
         commandList = [
-            "0. Show blockchain",
+            "0. Show blockChain",
             "1. Open port for incoming connection",
             "2. Mine block",
             "3. Broadcast block",
-            "4. Broadcast blockchain",
+            "4. Broadcast blockChain",
             "5. Show peer list",
             "6. Discover peers from connected peers",
             "7. Get peer list from a peer",
             "8. Add peer",
             "9. Request Latest block",
-            "10. Request Latest blockchain",
+            "10. Request Latest blockChain",
             "11. Show self IP and port",
+            "12. Initialize blockChain",
             "q. Quit"
             ]
 
@@ -67,8 +67,17 @@ commandProcessor cmd tVarBlockChain tVarPeers tVarSelfAddr= do
         "9"  -> requestLatest LatestBlock tVarBlockChain tVarPeers
         "10" -> requestLatest LatestBlockChain tVarBlockChain tVarPeers
         "11" -> showSelfAddr tVarSelfAddr
+        "12" -> initialize tVarBlockChain
         "q"  -> putStrLn "Quit"
         _    -> putStrLn "Not yet defined"
+
+
+
+initialize :: TVar BlockChain -> IO ()
+initialize tVarBlockChain = do
+  blockChain <- initBlockChain
+  atomically (writeTVar tVarBlockChain blockChain)
+  return ()
 
 
 showSelfAddr tVarSelfAddr = do

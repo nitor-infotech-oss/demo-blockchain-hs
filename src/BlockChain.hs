@@ -118,14 +118,14 @@ replaceBlockChain oldBlockChain newBlockChain
     | otherwise = Nothing
 
 
-genesisBlock :: IO Block
-genesisBlock = do
-    let now = "2020-01-20 18:19:57.288924435 UTC"
+getGenesisBlock :: IO Block
+getGenesisBlock = do
+    now <- getCurrentTime
     let prevHash       = "0"
     let blockData      = "Genesis Block"
     let difficulty     = 2
     let (hash, uNonce) = calculateHashForBlock' 1 prevHash (show now) blockData 0 difficulty
-    return (Block 1 prevHash now blockData hash uNonce difficulty)
+    return (Block 1 prevHash (show now) blockData hash uNonce difficulty)
 
 
 mine :: BlockChain -> BlockData -> IO (Maybe BlockChain)
@@ -152,8 +152,9 @@ getDeserializedBlockChain chain = Data.Binary.decode chain :: BlockChain
 
 initBlockChain :: IO BlockChain
 initBlockChain = do
-    genBlock <- genesisBlock
-    return [genBlock]
+    genesisBlock <- getGenesisBlock
+    return [genesisBlock]
+
 
 instance Show Block where
   show block = blockIndex ++ bData ++ minedAt ++ pHash ++ bHash ++ diff ++ nonc
