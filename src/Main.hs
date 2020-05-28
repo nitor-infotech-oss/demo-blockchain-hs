@@ -24,7 +24,7 @@ import           Web.Firefly
 main :: IO ()
 main = do
   blockChain <- initBlockChain
-  tVarBlockChain <- atomically (newTVar blockChain)
+  tVarBlockChain <- atomically (newTVar ([] :: BlockChain))
   tVarPeers <- atomically (newTVar Set.empty)
   tVarSelfAddr <- atomically (newTVar ("",""))
   run 5000 (app tVarBlockChain tVarPeers tVarSelfAddr)
@@ -32,6 +32,7 @@ main = do
 
 app :: TVar BlockChain -> TVar (Set.Set (HostName, ServiceName)) -> TVar (HostName, ServiceName) -> App ()
 app tVarBlockChain tVarPeers tVarSelfAddr = do
+  route "/initBlockChain" (initializeHandler tVarBlockChain)
   route "/showBlockChain" (showBlockChainHandler tVarBlockChain)
   route "/openPort" (openPortHandler tVarBlockChain tVarPeers tVarSelfAddr)
   route "/mine" (mineNewBlockHandler tVarBlockChain)
@@ -43,6 +44,13 @@ app tVarBlockChain tVarPeers tVarSelfAddr = do
   route "/requestBlock" (requestBlockHandler tVarBlockChain tVarPeers)
   route "/requestBlockChain" (requestBlockChainHandler tVarBlockChain tVarPeers)
   route "/requestPeers" (requestPeersHandler tVarPeers)
+
+
+initializeHandler :: TVar BlockChain -> Handler W.Response
+initializeHandler tVarBlockChain = liftIO $ do
+  blockChain <- initBlockChain
+  atomically (writeTVar tVarBlockChain blockChain)
+  return (toResponse $ Json blockChain)
 
 
 showBlockChainHandler :: TVar BlockChain -> Handler W.Response
